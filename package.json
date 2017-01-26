@@ -1,0 +1,9 @@
+{
+  "name": "custom-elements-helpers",
+  "version": "0.1.0",
+  "description": "A collection of Custom Elements v1 helpers",
+  "main": "index.js",
+  "repository": "https://github.com/mrhenry/custom-elements-helpers",
+  "author": "@mrhenry",
+  "license": "MIT"
+}
