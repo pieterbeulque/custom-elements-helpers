@@ -1,6 +1,6 @@
 import { addMethod, addGetter } from '../util/util';
 
-export class AttrMedia {
+export default class AttrMedia {
 
 	static attachTo(customElement) {
 		// Adds customElement.media

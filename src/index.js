@@ -1,0 +1,1 @@
+export { default as AttrMedia } from './attributes/media';
