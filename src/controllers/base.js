@@ -68,6 +68,16 @@ export default class BaseController {
 				wrappedHandler = function (e) {
 					let matches = false;
 
+					if (!e.path) {
+						e.path = [e.target];
+						let node = e.target;
+
+						while (node.parentNode) {
+							node = node.parentNode;
+							e.path.push(node);
+						}
+					}
+
 					for (let i = 0; i < e.path.length; i++) {
 						const tag = e.path[i];
 
