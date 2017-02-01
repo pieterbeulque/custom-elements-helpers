@@ -1,4 +1,4 @@
-import { addMethod, addGetter } from '../util/util';
+import { addMethod, addGetter } from '../internal/decorators';
 
 export default class AttrMedia {
 
@@ -6,7 +6,7 @@ export default class AttrMedia {
 		// Adds customElement.media
 		// @return string 		Value of `media=""` attribute
 		addGetter(customElement, 'media', function () {
-			return this.hasAttribute('media') ? this.getAttribute('media') : false;
+			return this.el.hasAttribute('media') ? this.el.getAttribute('media') : false;
 		});
 
 		// Adds customElement.matchesMedia
@@ -20,38 +20,32 @@ export default class AttrMedia {
 		});
 
 		// Adds customElements.whenMediaMatches()
-		// @param function		Callback run when this.matchesMedia becomes true
-		// @param bool			If true, runs only once, if false, runs everytime media changes into true
-		addMethod(customElement, 'whenMediaMatches', function (then, once = true) {
-			let hasRun = false;
-			let mq;
+		// @return Promise
+		addMethod(customElement, 'whenMediaMatches', function () {
+			const defer = new Promise((resolve, reject) => {
+				let mq;
 
-			const run = function () {
-				if (!hasRun || !once) {
-					hasRun = true;
-					then();
-				}
-			};
+				const handler = function (e) {
+					if (!mq.matches) {
+						// Not `reject()`-ing here because
+						// we're just waiting for the media query to resolve
+						return false;
+					}
 
-			const handler = function (e) {
-				if (!mq.matches) {
-					return false;
-				}
-
-				run();
-
-				if (!!once) {
+					resolve();
 					mq.removeListener(handler);
-				}
-			};
+				};
 
-			if ('matchMedia' in window) {
-				mq = window.matchMedia(this.media);
-				mq.addListener(handler);
-				handler(mq);
-			} else {
-				run();
-			}
+				if ('matchMedia' in window) {
+					mq = window.matchMedia(this.media);
+					mq.addListener(handler);
+					handler(mq);
+				} else {
+					resolve();
+				}
+			});
+
+			return defer;
 		});
 	}
 

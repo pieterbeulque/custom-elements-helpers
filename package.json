@@ -8,7 +8,7 @@
   "author": "@mrhenry",
   "license": "MIT",
   "scripts": {
-    "build": "babel src/index.js -o lib/index.js --presets=babel-preset-es2015"
+    "build": "rollup -c"
   },
   "devDependencies": {
     "babel-preset-es2015-rollup": "^3.0.0",

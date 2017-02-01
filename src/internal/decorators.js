@@ -12,7 +12,7 @@ const addGetter = function (customElement, name, method) {
 	}
 
 	Object.defineProperty(customElement.prototype, name, {
-		configurable: true,
+		configurable: false,
 		get: method
 	});
 };
@@ -23,7 +23,7 @@ const addSetter = function (customElement, name, method) {
 	}
 
 	Object.defineProperty(customElement.prototype, name, {
-		configurable: true,
+		configurable: false,
 		set: method
 	});
 };
@@ -33,13 +33,13 @@ const addProperty = function (customElement, name, getter = null, setter = null)
 		console.warn(`${customElement.name} already has a property ${name}`);
 	}
 
-	if (typeof getter === 'function') {
-		addGetter(customElement, name, getter);
-	}
+	const noop = function () {};
 
-	if (typeof setter === 'function') {
-		addSetter(customElement, name, setter);
-	}
+	Object.defineProperty(customElement.prototype, name, {
+		configurable: false,
+		get: typeof getter === 'function' ? getter : noop,
+		set: typeof setter === 'function' ? setter : noop
+	});
 };
 
 export {
