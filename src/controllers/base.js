@@ -62,7 +62,7 @@ export default class BaseController {
 		if (event.indexOf(' ') > 0) {
 			selector = event.split(' ').splice(1).join(' ').trim();
 
-			if (selector.length > 1) {
+			if (selector.length > 0) {
 				event = event.split(' ').shift();
 
 				wrappedHandler = function (e) {
