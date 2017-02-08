@@ -16,7 +16,10 @@ export default {
 		bind() {
 			this.on('popstate', e => {
 				if (e.state && e.state.href) {
-					this.goTo(e.state.href, false);
+					this.goTo(e.state.href, false).catch(err => {
+						console.warn('Could not run popstate to', e.state.href);
+						console.warn('Error:', err);
+					});
 				}
 			}, window);
 
@@ -41,7 +44,10 @@ export default {
 				e.stopPropagation();
 
 				const href = node.getAttribute('href');
-				this.goTo(href);
+				this.goTo(href).catch(err => {
+					console.warn('Could not navigate to', href);
+					console.warn('Error:', err);
+				});
 			}, document.body);
 		}
 
@@ -74,9 +80,10 @@ export default {
 
 			return new Promise((resolve, reject) => {
 				window.dispatchEvent(new CustomEvent('smoothState:before'));
+
 				document.body.classList.add('is-loading');
 
-				return this.onBefore().then(() => {
+				return this.onBefore(href).then(() => {
 					fetch(href).then(res => res.text()).then(html => {
 						const { title, content } = parseHTML(html);
 
@@ -85,7 +92,7 @@ export default {
 						this.onStart().then(() => {
 							window.dispatchEvent(new CustomEvent('smoothState:ready'));
 
-							this.onReady().then(() => {
+							this.onReady(content).then((content) => {
 								window.requestAnimationFrame(() => {
 									renderNodes(content, this.el);
 									document.title = title;
@@ -94,20 +101,22 @@ export default {
 										window.history.pushState({ href, title }, title, href);
 									}
 
-									document.body.classList.remove('is-loading');
+									window.requestAnimationFrame(() => {
+										document.body.classList.remove('is-loading');
 
-									window.dispatchEvent(new CustomEvent('smoothState:after'));
+										window.dispatchEvent(new CustomEvent('smoothState:after'));
 
-									this.onAfter().then(() => resolve()).catch(() => reject());
+										this.onAfter().then(() => resolve()).catch((err) => reject(err));
+									});
 								});
-							}).catch(() => reject());
-						}).catch(() => reject());
-					}).catch(() => reject());
-				}).catch(() => reject());
+							}).catch((err) => reject(err));
+						}).catch((err) => reject(err));
+					}).catch((err) => reject(err));
+				}).catch((err) => reject(err));
 			});
 		}
 
-		onBefore() {
+		onBefore(to) {
 			return Promise.resolve();
 		}
 
@@ -115,8 +124,8 @@ export default {
 			return Promise.resolve();
 		}
 
-		onReady() {
-			return Promise.resolve();
+		onReady(content) {
+			return Promise.resolve(content);
 		}
 
 		onAfter() {
