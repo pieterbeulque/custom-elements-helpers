@@ -72,13 +72,13 @@ const generateNumberAttributeMethods = function (attribute) {
 
 const generateAttributeMethods = function (attribute, type = 'string') {
 	if (type === 'bool') {
-		return generateBoolAttributeMethods(name);
+		return generateBoolAttributeMethods(attribute);
 	} else if (type === 'int' || type === 'integer') {
-		return generateIntegerAttributeMethods(name);
+		return generateIntegerAttributeMethods(attribute);
 	} else if (type === 'float' || type === 'number') {
-		return generateNumberAttributeMethods(name);
+		return generateNumberAttributeMethods(attribute);
 	} else if (type === 'string') {
-		return generateStringAttributeMethods(name);
+		return generateStringAttributeMethods(attribute);
 	} else {
 		return { getter: noop, setter: noop };
 	}
