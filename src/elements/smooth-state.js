@@ -4,11 +4,81 @@ export default {
 	attributes: [],
 	controller: class extends BaseController {
 
+		get path() {
+			return this._path || [];
+		}
+
+		get latestPathEntry() {
+			const length = this.path.length;
+
+			if (length > 0) {
+				return this.path[length - 1];
+			}
+
+			return undefined;
+		}
+
+		set path(to) {
+			console.warn(`You can't directly set the path`);
+		}
+
+		addToPath(href) {
+			// Make sure `href` is an absolute path from the / root of the current site
+			href = href.replace(window.location.origin, '');
+			href = href[0] !== '/' ? `/${href}` : href;
+
+			this._path = this._path || [];
+
+			let from;
+
+			if (this._path.length > 0) {
+				from = this._path[this._path.length - 1].to;
+			}
+
+			const pathEntry = {
+				from: from,
+				to: href
+			};
+
+			this._path.push(pathEntry);
+
+			return this;
+		}
+
+		removeLatestFromPath() {
+			(this._path || []).pop();
+			return this;
+		}
+
+		pushState(href, title = '', addToPath = true) {
+			const state = { href, title };
+
+			window.history.pushState(state, title, href);
+
+			if (addToPath) {
+				this.addToPath(href);
+			}
+
+			return this;
+		}
+
+		replaceState(href, title = '', addToPath = true) {
+			const state = { href, title };
+
+			window.history.replaceState(state, title, href);
+
+			if (addToPath) {
+				this.addToPath(href);
+			}
+
+			return this;
+		}
+
 		init() {
 			const href = window.location.href;
 			const title = document.title;
 
-			window.history.pushState({ href, title }, title, href);
+			this.replaceState(href, title);
 
 			return this;
 		}
@@ -83,22 +153,38 @@ export default {
 
 				document.body.classList.add('is-loading');
 
-				return this.onBefore(href).then(() => {
+				this.addToPath(href);
+
+				const cancel = (err) => {
+					this.removeLatestFromPath();
+					reject(err);
+				};
+
+				const transition = {};
+				transition.container = this.el;
+				transition.path = Object.assign(this.latestPathEntry);
+
+				return this.onBefore(transition).then(() => {
 					fetch(href).then(res => res.text()).then(html => {
 						const { title, content } = parseHTML(html);
 
 						window.dispatchEvent(new CustomEvent('smoothState:start'));
 
-						this.onStart().then(() => {
+						transition.fetched = { title, content };
+
+						this.onStart(transition).then(() => {
 							window.dispatchEvent(new CustomEvent('smoothState:ready'));
 
-							this.onReady(content).then((content) => {
+							this.onReady(transition).then(() => {
+								const { title, content } = transition.fetched;
+
 								window.requestAnimationFrame(() => {
 									renderNodes(content, this.el);
 									document.title = title;
 
 									if (!!pushState) {
-										window.history.pushState({ href, title }, title, href);
+										// Don't add the state to the path
+										this.pushState(href, title, false);
 									}
 
 									window.requestAnimationFrame(() => {
@@ -106,30 +192,32 @@ export default {
 
 										window.dispatchEvent(new CustomEvent('smoothState:after'));
 
-										this.onAfter().then(() => resolve()).catch((err) => reject(err));
+										// You can't cancel the transition after the pushState
+										// So we also resolve inside the catch
+										this.onAfter(transition).then(() => resolve()).catch((err) => resolve());
 									});
 								});
-							}).catch((err) => reject(err));
-						}).catch((err) => reject(err));
-					}).catch((err) => reject(err));
-				}).catch((err) => reject(err));
+							}).catch((err) => cancel(err));
+						}).catch((err) => cancel(err));
+					}).catch((err) => cancel(err));
+				}).catch((err) => cancel(err));
 			});
 		}
 
-		onBefore(to) {
-			return Promise.resolve();
+		onBefore(transition) {
+			return Promise.resolve(transition);
 		}
 
-		onStart() {
-			return Promise.resolve();
+		onStart(transition) {
+			return Promise.resolve(transition);
 		}
 
-		onReady(content) {
-			return Promise.resolve(content);
+		onReady(transition) {
+			return Promise.resolve(transition);
 		}
 
-		onAfter() {
-			return Promise.resolve();
+		onAfter(transition) {
+			return Promise.resolve(transition);
 		}
 
 	}
