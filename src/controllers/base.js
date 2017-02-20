@@ -57,7 +57,10 @@ export default class BaseController {
 		}
 
 		let selector;
-		let wrappedHandler;
+
+		let wrappedHandler = function (e) {
+			handler(e, e.currentTarget);
+		};
 
 		if (event.indexOf(' ') > 0) {
 			selector = event.split(' ').splice(1).join(' ').trim();
@@ -82,7 +85,7 @@ export default class BaseController {
 						const tag = e.path[i];
 
 						if (tag.matches(selector)) {
-							matches = true;
+							matches = tag;
 							break;
 						}
 
@@ -96,14 +99,10 @@ export default class BaseController {
 					}
 
 					if (matches) {
-						handler(e);
+						handler(e, matches);
 					}
 				}
 			}
-		}
-
-		if (!wrappedHandler) {
-			wrappedHandler = handler;
 		}
 
 		const listener = { target, selector, event, handler: wrappedHandler, options };
