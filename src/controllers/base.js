@@ -114,6 +114,15 @@ export default class BaseController {
 		return this;
 	}
 
+	once(event, handler, target = null, options = false) {
+		const wrappedHandler = (e, currentTarget) => {
+			this.off(event, target);
+			handler(e, currentTarget);
+		};
+
+		this.on(event, wrappedHandler, target, options);
+	}
+
 	off(event, target = null) {
 		let selector;
 
@@ -128,6 +137,8 @@ export default class BaseController {
 		const listener = this._handlers.find(h => {
 			return h.selector === selector && h.event === event && (!target || h.target === target);
 		});
+
+		this._handlers.splice(this._handlers.indexOf(listener), 1);
 
 		listener.target.removeEventListener(listener.event, listener.handler, listener.options);
 	}
