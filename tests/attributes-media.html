@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Custom Elements Helpers — Tests</title>
+	<link rel="stylesheet" href="assets/stylesheets/application.css">
+
+	<!-- Testing Suite -->
+	<link rel="stylesheet" href="../node_modules/mocha/mocha.css">
+	<script src="../node_modules/mocha/mocha.js"></script>
+	<script src="../node_modules/chai/chai.js"></script>
+
+	<!-- Things to test -->
+</head>
+<body>
+	<header class="site-header">
+		<div class="wrapper">
+			<h1 class="site-header__logo">
+				Custom Elements Helpers<br>
+				<span>Attributes</span> <span>Media</span>
+			</h1>
+
+			<nav class="site-header__navigation">
+				<ul>
+					<li>
+						<a href="https://github.com/mrhenry/custom-elements-helpers">
+							View on Github
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+
+	<main class="site-content">
+		<div class="wrapper">
+			<article class="suite">
+				<header class="suite__header">
+					<h2>Usage</h2>
+				</header>
+				<div class="suite__content">
+					<p>
+						The media attribute adds <strong>media query support</strong> to your custom element.
+					</p>
+				</div>
+			</article>
+
+			<article class="suite">
+				<header class="suite__header">
+					<h2>Tests</h2>
+				</header>
+				<div class="suite__content" id="mocha">
+					
+				</div>
+			</article>
+		</div>
+	</main>
+
+	<script>
+		const assert = chai.assert;
+
+		const DOM = document.createElement('div');
+		DOM.setAttribute('media', '(min-width: 768px)');
+
+		mocha.setup('tdd');
+
+		suite('AttrMedia', function () {
+			suite('Media Attribute', function () {
+				test('should return string value', function () {
+					assert.equal(typeof DOM.getAttribute('media'), 'string');
+				});
+
+				test('should return string value', function () {
+					assert.equal(DOM.getAttribute('media'), '(min-width: 1024px)');
+				});
+			});
+		});
+
+		mocha.run();
+	</script>
+</body>
+</html>
