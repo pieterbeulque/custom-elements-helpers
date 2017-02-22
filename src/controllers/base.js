@@ -138,9 +138,11 @@ export default class BaseController {
 			return h.selector === selector && h.event === event && (!target || h.target === target);
 		});
 
-		this._handlers.splice(this._handlers.indexOf(listener), 1);
+		if (!!listener && !!listener.target) {
+			this._handlers.splice(this._handlers.indexOf(listener), 1);
 
-		listener.target.removeEventListener(listener.event, listener.handler, listener.options);
+			listener.target.removeEventListener(listener.event, listener.handler, listener.options);
+		}
 	}
 
 }
