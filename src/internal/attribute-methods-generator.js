@@ -6,7 +6,7 @@ const generateStringAttributeMethods = function (attribute) {
 	};
 
 	const setter = function (to) {
-		if (!!to) {
+		if (to) {
 			this.el.setAttribute(attribute, to);
 		} else {
 			this.el.removeAttribute(attribute);
@@ -22,7 +22,7 @@ const generateBoolAttributeMethods = function (attribute) {
 	};
 
 	const setter = function (to) {
-		if (!!to) {
+		if (to) {
 			this.el.setAttribute(attribute, attribute);
 		} else {
 			this.el.removeAttribute(attribute);
@@ -79,9 +79,8 @@ const generateAttributeMethods = function (attribute, type = 'string') {
 		return generateNumberAttributeMethods(attribute);
 	} else if (type === 'string') {
 		return generateStringAttributeMethods(attribute);
-	} else {
-		return { getter: noop, setter: noop };
 	}
+	return { getter: noop, setter: noop };
 };
 
 export {
@@ -89,5 +88,5 @@ export {
 	generateIntegerAttributeMethods,
 	generateStringAttributeMethods,
 	generateNumberAttributeMethods,
-	generateAttributeMethods
+	generateAttributeMethods,
 };

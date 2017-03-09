@@ -2,7 +2,7 @@ import BaseController from '../controllers/base';
 
 export default {
 	attributes: [
-		{ attribute: 'key', type: 'int' }
+		{ attribute: 'key', type: 'int' },
 	],
 	controller: class extends BaseController {
 
@@ -12,7 +12,7 @@ export default {
 			if (this.el.hasAttribute('href')) {
 				this.elements.target = this;
 			} else {
-				this.elements.target = this.el.querySelector('[href]')
+				this.elements.target = this.el.querySelector('[href]');
 			}
 
 			return this;
@@ -20,7 +20,7 @@ export default {
 
 		bind() {
 			if (this.elements.target) {
-				this.on('keyup', e => {
+				this.on('keyup', (e) => {
 					if (e.which === this.key) {
 						this.elements.target.click();
 					}
@@ -30,5 +30,5 @@ export default {
 			return this;
 		}
 
-	}
+	},
 };

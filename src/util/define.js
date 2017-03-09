@@ -4,10 +4,10 @@ import { generateAttributeMethods } from '../internal/attribute-methods-generato
 export default function defineCustomElement(tag, options = {}) {
 	// Attach all passed attributes to the passed controller
 	if (options.attributes && options.attributes.length) {
-		for (const attribute of options.attributes) {
+		options.attributes.forEach((attribute) => {
 			// String, sync with actual element attribute
 			if (typeof attribute === 'string') {
-				const { getter, setter } = generateStringAttributeMethods(attribute);
+				const { getter, setter } = generateAttributeMethods(attribute, 'string');
 				addProperty(options.controller, attribute, getter, setter);
 			} else if (typeof attribute.attachTo === 'function') {
 				attribute.attachTo(options.controller);
@@ -19,7 +19,7 @@ export default function defineCustomElement(tag, options = {}) {
 
 				addProperty(options.controller, name, getter, setter);
 			}
-		}
+		});
 	}
 
 	return customElements.define(tag, class extends HTMLElement {
@@ -33,4 +33,4 @@ export default function defineCustomElement(tag, options = {}) {
 		}
 
 	});
-};
+}
