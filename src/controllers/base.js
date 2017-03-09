@@ -1,3 +1,5 @@
+import { parse as parseEvent, getPath } from '../util/events';
+
 export default class BaseController {
 
 	constructor(el) {
@@ -15,19 +17,19 @@ export default class BaseController {
 	}
 
 	resolve() {
-		return new Promise(function (resolve, reject) {
+		return new Promise((resolve) => {
 			if (document.readyState === 'complete') {
-				return resolve();
+				resolve();
+			} else {
+				const handler = function () {
+					if (document.readyState === 'complete') {
+						document.removeEventListener('readystatechange', handler, false);
+						resolve();
+					}
+				};
+
+				document.addEventListener('readystatechange', handler, false);
 			}
-
-			const handler = function () {
-				if (document.readyState === 'complete') {
-					document.removeEventListener('readystatechange', handler, false);
-					return resolve();
-				}
-			};
-
-			document.addEventListener('readystatechange', handler, false);
 		});
 	}
 
@@ -39,73 +41,43 @@ export default class BaseController {
 
 	unbind() {
 		if (this._handlers) {
-			for (let listener of this._handlers) {
+			this._handlers.forEach((listener) => {
 				listener.target.removeEventListener(listener.event, listener.handler, listener.options);
-			}
+			});
 		}
 
 		return this;
 	}
 
-	on(event, handler, target = null, options = false) {
-		event = event.trim();
-
+	on(name, handler, target = null, options = false) {
 		this._handlers = this._handlers || [];
 
-		if (!target) {
-			target = this.el;
-		}
-
-		let selector;
+		const { event, selector } = parseEvent(name);
+		const parsedTarget = !target ? this.el : target;
 
 		let wrappedHandler = function (e) {
 			handler(e, e.currentTarget);
 		};
 
-		if (event.indexOf(' ') > 0) {
-			selector = event.split(' ').splice(1).join(' ').trim();
+		if (selector) {
+			wrappedHandler = function (e) {
+				const path = getPath(e);
 
-			if (selector.length > 0) {
-				event = event.split(' ').shift();
+				const currentTarget = path.find((tag) => tag.matches(selector));
 
-				wrappedHandler = function (e) {
-					let matches = false;
-
-					if (!e.path) {
-						e.path = [e.target];
-						let node = e.target;
-
-						while (node.parentNode) {
-							node = node.parentNode;
-							e.path.push(node);
-						}
-					}
-
-					for (let i = 0; i < e.path.length; i++) {
-						const tag = e.path[i];
-
-						if (tag.matches(selector)) {
-							matches = tag;
-							break;
-						}
-
-						if (tag === document.body) {
-							break;
-						}
-
-						if (tag === target) {
-							break;
-						}
-					}
-
-					if (matches) {
-						handler(e, matches);
-					}
+				if (currentTarget) {
+					handler(e, currentTarget);
 				}
-			}
+			};
 		}
 
-		const listener = { target, selector, event, handler: wrappedHandler, options };
+		const listener = {
+			target: parsedTarget,
+			selector,
+			event,
+			handler: wrappedHandler,
+			options,
+		};
 
 		listener.target.addEventListener(listener.event, listener.handler, listener.options);
 
@@ -114,28 +86,37 @@ export default class BaseController {
 		return this;
 	}
 
-	once(event, handler, target = null, options = false) {
+	once(name, handler, target = null, options = false) {
 		const wrappedHandler = (e, currentTarget) => {
-			this.off(event, target);
+			this.off(name, target);
 			handler(e, currentTarget);
 		};
 
-		this.on(event, wrappedHandler, target, options);
+		this.on(name, wrappedHandler, target, options);
 	}
 
-	off(event, target = null) {
-		let selector;
+	off(name, target = null) {
+		const { event, selector } = parseEvent(name);
+		const parsedTarget = !target ? this.el : target;
 
-		if (event.indexOf(' ') > 0) {
-			selector = event.split(' ').splice(1).join(' ').trim();
-
-			if (selector.length > 1) {
-				event = event.split(' ').shift();
+		const listener = this._handlers.find((handler) => {
+			// Selectors don't match
+			if (handler.selector !== selector) {
+				return false;
 			}
-		}
 
-		const listener = this._handlers.find(h => {
-			return h.selector === selector && h.event === event && (!target || h.target === target);
+			// Event type don't match
+			if (handler.event !== event) {
+				return false;
+			}
+
+			// Passed a target, but the targets don't match
+			if (!!parsedTarget && handler.target !== parsedTarget) {
+				return false;
+			}
+
+			// Else, we found a match
+			return true;
 		});
 
 		if (!!listener && !!listener.target) {

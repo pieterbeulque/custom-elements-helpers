@@ -5,13 +5,13 @@ export default class AttrMedia {
 	static attachTo(customElement) {
 		// Adds customElement.media
 		// @return string 		Value of `media=""` attribute
-		addGetter(customElement, 'media', function () {
+		addGetter(customElement, 'media', function getMediaAttribute() {
 			return this.el.hasAttribute('media') ? this.el.getAttribute('media') : false;
 		});
 
 		// Adds customElement.matchesMedia
 		// @return bool 		If the viewport currently matches the specified media query
-		addGetter(customElement, 'matchesMedia', function () {
+		addGetter(customElement, 'matchesMedia', function matchesMedia() {
 			if (!this.media) {
 				return true;
 			}
@@ -21,19 +21,15 @@ export default class AttrMedia {
 
 		// Adds customElements.whenMediaMatches()
 		// @return Promise
-		addMethod(customElement, 'whenMediaMatches', function () {
-			const defer = new Promise((resolve, reject) => {
+		addMethod(customElement, 'whenMediaMatches', function whenMediaMatches() {
+			const defer = new Promise((resolve) => {
 				let mq;
 
-				const handler = function (e) {
-					if (!mq.matches) {
-						// Not `reject()`-ing here because
-						// we're just waiting for the media query to resolve
-						return false;
+				const handler = function () {
+					if (mq.matches) {
+						resolve();
+						mq.removeListener(handler);
 					}
-
-					resolve();
-					mq.removeListener(handler);
 				};
 
 				if ('matchMedia' in window) {
