@@ -63,7 +63,7 @@ export default class BaseController {
 			wrappedHandler = function (e) {
 				const path = getPath(e);
 
-				const currentTarget = path.find((tag) => tag.matches(selector));
+				const currentTarget = path.find((tag) => tag.matches && tag.matches(selector));
 
 				if (currentTarget) {
 					handler(e, currentTarget);
