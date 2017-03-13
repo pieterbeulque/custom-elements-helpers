@@ -1,8 +1,9 @@
 import BaseController from '../controllers/base';
 
-export default {
-	attributes: [],
-	controller: class extends BaseController {
+const SmoothStateController = (function SmoothStateController() {
+	const SMOOTH_STATE_DOM_PARSER = new DOMParser();
+
+	return class extends BaseController {
 
 		get path() {
 			return this._path || [];
@@ -18,14 +19,10 @@ export default {
 			return undefined;
 		}
 
-		set path(to) {
-			console.warn(`You can't directly set the path`);
-		}
-
 		addToPath(href) {
 			// Make sure `href` is an absolute path from the / root of the current site
-			href = href.replace(window.location.origin, '');
-			href = href[0] !== '/' ? `/${href}` : href;
+			let absolutePath = href.replace(window.location.origin, '');
+			absolutePath = absolutePath[0] !== '/' ? `/${absolutePath}` : absolutePath;
 
 			this._path = this._path || [];
 
@@ -36,8 +33,8 @@ export default {
 			}
 
 			const pathEntry = {
-				from: from,
-				to: href
+				from,
+				to: absolutePath,
 			};
 
 			this._path.push(pathEntry);
@@ -84,16 +81,16 @@ export default {
 		}
 
 		bind() {
-			this.on('popstate', e => {
+			this.on('popstate', (e) => {
 				if (e.state && e.state.href) {
-					this.goTo(e.state.href, false).catch(err => {
+					this.goTo(e.state.href, false).catch((err) => {
 						console.warn('Could not run popstate to', e.state.href);
 						console.warn('Error:', err);
 					});
 				}
 			}, window);
 
-			this.on('click a', e => {
+			this.on('click a', (e) => {
 				let node = e.target;
 				const path = Object.assign([], e.path);
 
@@ -114,7 +111,7 @@ export default {
 				e.stopPropagation();
 
 				const href = node.getAttribute('href');
-				this.goTo(href).catch(err => {
+				this.goTo(href).catch((err) => {
 					console.warn('Could not navigate to', href);
 					console.warn('Error:', err);
 				});
@@ -122,22 +119,29 @@ export default {
 		}
 
 		goTo(href, pushState = true) {
-			const parseHTML = html => {
-				const doc = document.implementation.createHTMLDocument();
-				doc.documentElement.innerHTML = html;
+			const parseHTML = (html) => {
+				try {
+					const parsed = SMOOTH_STATE_DOM_PARSER.parseFromString(html, 'text/html');
 
-				const title = doc.title;
-				const container = doc.body.getElementsByTagName('mr-smooth-state');
+					const title = parsed.title;
+					const container = parsed.body.getElementsByTagName('mr-smooth-state');
 
-				const content = (container.length === 0) ? doc.body : container[0];
+					const content = (container.length === 0) ? parsed.body : container[0];
 
-				return { title, content };
+					return { title, content };
+				} catch (e) {
+					console.warn('Smooth state could not parse HTML');
+					window.location = href;
+					return { error: 'parser-error' };
+				}
 			};
 
 			const renderNodes = (content, container) => {
-				container.innerHTML = '';
+				while (container.hasChildNodes()) {
+					container.removeChild(container.firstChild);
+				}
 
-				for (let i = content.children.length - 1; i >= 0; i--) {
+				for (let i = content.children.length - 1; i >= 0; i -= 1) {
 					const child = content.children[i];
 
 					if (container.firstChild) {
@@ -165,7 +169,7 @@ export default {
 				transition.path = Object.assign(this.latestPathEntry);
 
 				return this.onBefore(transition).then(() => {
-					fetch(href).then(res => res.text()).then(html => {
+					fetch(href).then((res) => res.text()).then((html) => {
 						const { title, content } = parseHTML(html);
 
 						window.dispatchEvent(new CustomEvent('smoothState:start'));
@@ -176,15 +180,15 @@ export default {
 							window.dispatchEvent(new CustomEvent('smoothState:ready'));
 
 							this.onReady(transition).then(() => {
-								const { title, content } = transition.fetched;
+								const { title: verifiedTitle, content: verifiedContent } = transition.fetched;
 
 								window.requestAnimationFrame(() => {
-									renderNodes(content, this.el);
-									document.title = title;
+									renderNodes(verifiedContent, this.el);
+									document.title = verifiedTitle;
 
-									if (!!pushState) {
+									if (pushState) {
 										// Don't add the state to the path
-										this.pushState(href, title, false);
+										this.pushState(href, verifiedTitle, false);
 									}
 
 									window.requestAnimationFrame(() => {
@@ -194,7 +198,7 @@ export default {
 
 										// You can't cancel the transition after the pushState
 										// So we also resolve inside the catch
-										this.onAfter(transition).then(() => resolve()).catch((err) => resolve());
+										this.onAfter(transition).then(() => resolve()).catch(() => resolve());
 									});
 								});
 							}).catch((err) => cancel(err));
@@ -220,5 +224,11 @@ export default {
 			return Promise.resolve(transition);
 		}
 
-	}
+	};
+}());
+
+export default {
+	attributes: [],
+	controller: SmoothStateController,
 };
+
