@@ -1,9 +1,9 @@
 import BaseController from '../controllers/base';
+import { parseHTML, renderNodes } from '../util/html';
 
-const SmoothStateController = (function SmoothStateController() {
-	const SMOOTH_STATE_DOM_PARSER = new DOMParser();
-
-	return class extends BaseController {
+export default {
+	attributes: [],
+	controller: class extends BaseController {
 
 		get path() {
 			return this._path || [];
@@ -119,39 +119,6 @@ const SmoothStateController = (function SmoothStateController() {
 		}
 
 		goTo(href, pushState = true) {
-			const parseHTML = (html) => {
-				try {
-					const parsed = SMOOTH_STATE_DOM_PARSER.parseFromString(html, 'text/html');
-
-					const title = parsed.title;
-					const container = parsed.body.getElementsByTagName('mr-smooth-state');
-
-					const content = (container.length === 0) ? parsed.body : container[0];
-
-					return { title, content };
-				} catch (e) {
-					console.warn('Smooth state could not parse HTML');
-					window.location = href;
-					return { error: 'parser-error' };
-				}
-			};
-
-			const renderNodes = (content, container) => {
-				while (container.hasChildNodes()) {
-					container.removeChild(container.firstChild);
-				}
-
-				for (let i = content.children.length - 1; i >= 0; i -= 1) {
-					const child = content.children[i];
-
-					if (container.firstChild) {
-						container.insertBefore(child, container.firstChild);
-					} else {
-						container.appendChild(child);
-					}
-				}
-			};
-
 			return new Promise((resolve, reject) => {
 				window.dispatchEvent(new CustomEvent('smoothState:before'));
 
@@ -170,7 +137,7 @@ const SmoothStateController = (function SmoothStateController() {
 
 				return this.onBefore(transition).then(() => {
 					fetch(href).then((res) => res.text()).then((html) => {
-						const { title, content } = parseHTML(html);
+						const { title, content } = parseHTML(html, 'mr-smooth-state');
 
 						window.dispatchEvent(new CustomEvent('smoothState:start'));
 
@@ -224,11 +191,6 @@ const SmoothStateController = (function SmoothStateController() {
 			return Promise.resolve(transition);
 		}
 
-	};
-}());
-
-export default {
-	attributes: [],
-	controller: SmoothStateController,
+	},
 };
 
