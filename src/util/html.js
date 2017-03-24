@@ -20,6 +20,7 @@ export const parseMetaTag = (function parseMetaTag() {
 
 export const parseHTML = (function parseHTML() {
 	const parser = new DOMParser();
+
 	return function parse(html, selector = null) {
 		const parsed = parser.parseFromString(html, 'text/html');
 
@@ -27,13 +28,17 @@ export const parseHTML = (function parseHTML() {
 		const title = parsed.title;
 
 		// Get document nodes
-		const container = (selector) ? parsed.body.getElementsByTagName(selector) : parsed.body;
+		let content = parsed.body;
 
-		if (container.length === 0) {
-			throw new Error('not-found');
+		if (selector) {
+			const container = parsed.body.getElementsByTagName(selector);
+
+			if (container.length === 0) {
+				throw new Error('not-found');
+			} else {
+				content = container[0];
+			}
 		}
-
-		const content = container[0];
 
 		// Get document meta
 		const meta = Array.from(parsed.head.querySelectorAll('meta'), (tag) => parseMetaTag(tag)).filter((t) => !!t);
