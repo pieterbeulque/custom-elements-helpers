@@ -62,3 +62,17 @@ export function renderNodes(content, container) {
 		}
 	}
 }
+
+export function cleanNodes(nodes, selector) {
+	if (!selector || (Array.isArray(selector) && selector.length === 0)) {
+		return nodes;
+	}
+
+	const stringSelector = Array.isArray(selector) ? selector.join(', ') : selector;
+
+	const bloat = Array.from(nodes.querySelectorAll(stringSelector));
+
+	bloat.forEach((node) => node.parentNode.removeChild(node));
+
+	return nodes;
+}

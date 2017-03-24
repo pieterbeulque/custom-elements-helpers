@@ -10,4 +10,4 @@ export { default as smoothState } from './elements/smooth-state';
 
 // Utilities
 export { default as defineCustomElement} from './util/define';
-export { parseHTML, renderNodes } from './util/html';
+export { parseHTML, renderNodes, cleanNodes } from './util/html';
