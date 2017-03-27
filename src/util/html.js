@@ -31,12 +31,10 @@ export const parseHTML = (function parseHTML() {
 		let content = parsed.body;
 
 		if (selector) {
-			const container = parsed.body.getElementsByTagName(selector);
+			content = parsed.body.querySelector(selector);
 
-			if (container.length === 0) {
+			if (!content) {
 				throw new Error('not-found');
-			} else {
-				content = container[0];
 			}
 		}
 
