@@ -126,4 +126,16 @@ export default class BaseController {
 		}
 	}
 
+	emit(name, data = {}, options = {}) {
+		const params = Object.assign({
+			detail: data,
+			bubbles: true,
+			cancelable: true,
+		}, options);
+
+		const event = new CustomEvent(name, params);
+
+		this.el.dispatchEvent(event);
+	}
+
 }
