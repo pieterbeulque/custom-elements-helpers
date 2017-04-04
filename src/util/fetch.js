@@ -36,7 +36,7 @@ const fetchJSONP = function (url) {
 		// Register a global callback
 		// Make sure we have a unique function name
 		const now = (new Date()).getTime();
-		const callback = `${now}_AJAX_FORM_CALLBACK`;
+		const callback = `AJAX_FORM_CALLBACK_${now}`;
 
 		window[callback] = (res) => {
 			// Make the callback a noop
