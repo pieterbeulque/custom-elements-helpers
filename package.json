@@ -8,7 +8,10 @@
   "author": "@mrhenry",
   "license": "MIT",
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c rollup.build.config.js",
+    "build-tests:es6": "rollup -c rollup.test-es6.config.js",
+    "build-tests:babel": "rollup -c rollup.test-babel.config.js",
+    "build-tests": "yarn build-tests:es6 && yarn build-tests:babel",
     "lint": "eslint --fix src/**/*.js"
   },
   "devDependencies": {

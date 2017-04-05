@@ -6,7 +6,7 @@
 	<link rel="stylesheet" href="assets/stylesheets/application.css">
 
 	<!-- Testing Suite -->
-	<link rel="stylesheet" href="../node_modules/mocha/mocha.css">
+	<link rel="stylesheet" href="assets/stylesheets/mocha.css">
 	<script src="../node_modules/mocha/mocha.js"></script>
 	<script src="../node_modules/chai/chai.js"></script>
 
@@ -47,36 +47,22 @@
 
 			<article class="suite">
 				<header class="suite__header">
-					<h2>Tests</h2>
+					<h2>Demo</h2>
 				</header>
-				<div class="suite__content" id="mocha">
+				<div class="suite__content js-demo">
 					
 				</div>
+			</article>
+
+			<article class="suite"> 
+				<header class="suite__header">
+					<h2>Tests</h2>
+				</header>
+				<div class="suite__content" id="mocha"></div>
 			</article>
 		</div>
 	</main>
 
-	<script>
-		const assert = chai.assert;
-
-		const DOM = document.createElement('div');
-		DOM.setAttribute('media', '(min-width: 768px)');
-
-		mocha.setup('tdd');
-
-		suite('AttrMedia', function () {
-			suite('Media Attribute', function () {
-				test('should return string value', function () {
-					assert.equal(typeof DOM.getAttribute('media'), 'string');
-				});
-
-				test('should return string value', function () {
-					assert.equal(DOM.getAttribute('media'), '(min-width: 1024px)');
-				});
-			});
-		});
-
-		mocha.run();
-	</script>
+	<script src="./es6.js"></script>
 </body>
 </html>
