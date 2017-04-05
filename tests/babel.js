@@ -1,7 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', { value: true });
-
 function parse(name) {
 	var clean = name.trim();
 	var parts = clean.split(' ');
@@ -388,7 +386,7 @@ var AttrMedia = function () {
 	return AttrMedia;
 }();
 
-var keyTrigger = {
+{
 	attributes: [{ attribute: 'key', type: 'int' }],
 	controller: function (_BaseController) {
 		inherits(controller, _BaseController);
@@ -500,23 +498,7 @@ function renderNodes(content, container) {
 	}
 }
 
-function cleanNodes(nodes, selector) {
-	if (!selector || Array.isArray(selector) && selector.length === 0) {
-		return nodes;
-	}
-
-	var stringSelector = Array.isArray(selector) ? selector.join(', ') : selector;
-
-	var bloat = Array.from(nodes.querySelectorAll(stringSelector));
-
-	bloat.forEach(function (node) {
-		return node.parentNode.removeChild(node);
-	});
-
-	return nodes;
-}
-
-var smoothState = {
+{
 	attributes: [],
 	controller: function (_BaseController) {
 		inherits(controller, _BaseController);
@@ -901,11 +883,139 @@ function defineCustomElement(tag) {
 
 // Base Controller
 
-exports.BaseController = BaseController;
-exports.media = AttrMedia;
-exports.keyTrigger = keyTrigger;
-exports.smoothState = smoothState;
-exports.defineCustomElement = defineCustomElement;
-exports.parseHTML = parseHTML;
-exports.renderNodes = renderNodes;
-exports.cleanNodes = cleanNodes;
+var assert = window.chai.assert;
+var mocha = window.mocha;
+
+mocha.setup('tdd');
+
+var instance = void 0;
+
+var controller = function (_BaseController) {
+	inherits(controller, _BaseController);
+
+	function controller() {
+		classCallCheck(this, controller);
+		return possibleConstructorReturn(this, (controller.__proto__ || Object.getPrototypeOf(controller)).apply(this, arguments));
+	}
+
+	createClass(controller, [{
+		key: 'init',
+		value: function init() {
+			instance = this;
+			return this;
+		}
+	}, {
+		key: 'bind',
+		value: function bind() {
+			var _this2 = this;
+
+			console.log('bind');
+
+			this.whenMediaMatches().then(function () {
+				console.log(1);
+			});
+
+			this.whenMediaUnmatches().then(function () {
+				console.log(2);
+			});
+
+			this.watchMedia(function () {
+				_this2.el.style.color = 'green';
+				console.log('Media matched');
+			}, function () {
+				console.log('Media unmatched');
+				_this2.el.style.color = 'red';
+			});
+
+			return this;
+		}
+	}, {
+		key: 'render',
+		value: function render() {
+			mocha.run();
+			return this;
+		}
+	}, {
+		key: 'whenMediaUnmatches',
+		value: function whenMediaUnmatches() {
+			var _this3 = this;
+
+			var defer = new Promise(function (resolve) {
+				var mq = void 0;
+
+				var handler = function handler() {
+					if (!mq.matches) {
+						resolve();
+						mq.removeListener(handler);
+					}
+				};
+
+				if ('matchMedia' in window) {
+					mq = window.matchMedia(_this3.media);
+					mq.addListener(handler);
+					handler(mq);
+				} else {
+					resolve();
+				}
+			});
+
+			return defer;
+		}
+	}, {
+		key: 'watchMedia',
+		value: function watchMedia() {
+			var match = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+			var unmatch = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+
+			var mq = void 0;
+
+			var handler = function handler() {
+				if (mq.matches) {
+					match();
+				} else {
+					unmatch();
+				}
+			};
+
+			if ('matchMedia' in window) {
+				mq = window.matchMedia(this.media);
+				mq.addListener(handler);
+				handler(mq);
+			}
+		}
+	}]);
+	return controller;
+}(BaseController);
+
+defineCustomElement('test-attr-media', {
+	attributes: [AttrMedia],
+	controller: controller
+});
+
+var node = document.createElement('test-attr-media');
+node.setAttribute('media', '(min-width: 768px)');
+node.innerHTML = 'This is a block element that has the media attribute.';
+
+document.getElementsByClassName('js-demo')[0].appendChild(node);
+
+customElements.whenDefined('test-attr-media');
+
+suite('Attributes', function () {
+	test('this.media returns a string value', function () {
+		assert.equal(_typeof(instance.media), 'string');
+	});
+
+	test('this.media equals the media attribute value', function () {
+		assert.equal(node.getAttribute('media'), instance.media);
+	});
+
+	test('this.matchesMedia returns a boolean value', function () {
+		assert.equal(_typeof(instance.matchesMedia), 'boolean');
+	});
+});
+
+suite('Methods', function () {
+	test('this.whenMediaMatches() returns a Promise', function () {
+		assert.equal(_typeof(instance.whenMediaMatches().then), 'function');
+	});
+});
