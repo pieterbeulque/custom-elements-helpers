@@ -26,7 +26,7 @@ export default class AttrTouchHover {
 			this.on('touchstart', () => {
 				isTouch = true;
 				this.el.classList.add(touchClass);
-			}, this.el);
+			}, this.el, { useCapture: true });
 
 			this.on('touchstart', (e) => {
 				const path = getPath(e);
@@ -37,7 +37,7 @@ export default class AttrTouchHover {
 					isTouched = false;
 					this.el.classList.remove(hoverClass);
 				}
-			}, document.body);
+			}, document.body, { useCapture: true });
 
 			this.on('click', (e) => {
 				if (this.touchHover) {
@@ -65,7 +65,7 @@ export default class AttrTouchHover {
 						this.el.classList.toggle(hoverClass, isTouched);
 					}
 				}
-			}, this.el);
+			}, this.el, { useCapture: true });
 		});
 	}
 
