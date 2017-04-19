@@ -1,12 +1,14 @@
 import babel from 'rollup-plugin-babel';
+import paths from 'rollup-plugin-includepaths';
+import resolve from 'rollup-plugin-node-resolve';
 
 export default {
-	entry: 'tests/attributes-media.js',
+	entry: 'tests/specs.js',
 	format: 'cjs',
 	plugins: [
-		babel({
-			presets: ["es2015-rollup"]
-		})
+		resolve(),
+		paths({ paths: ['src'] }),
+		babel({ presets: ['es2015-rollup'] })
 	],
-	dest: 'tests/babel.js'
+	dest: 'tests/specs.babel.js'
 };
