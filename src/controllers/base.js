@@ -8,7 +8,7 @@ export default class BaseController {
 		this.resolve().then(() => {
 			this.el.classList.add('is-resolved');
 			return this.init().render().bind();
-		});
+		}, () => {});
 	}
 
 	destroy() {

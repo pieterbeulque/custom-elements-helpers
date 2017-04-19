@@ -3,14 +3,10 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Custom Elements Helpers — Tests</title>
-	<link rel="stylesheet" href="assets/stylesheets/application.css">
+	<link rel="stylesheet" href="/assets/stylesheets/application.css">
 
 	<!-- Testing Suite -->
-	<link rel="stylesheet" href="assets/stylesheets/mocha.css">
-	<script src="../node_modules/mocha/mocha.js"></script>
-	<script src="../node_modules/chai/chai.js"></script>
-
-	<!-- Things to test -->
+	<link rel="stylesheet" href="/assets/stylesheets/mocha.css">
 </head>
 <body>
 	<header class="site-header">
@@ -49,9 +45,7 @@
 				<header class="suite__header">
 					<h2>Demo</h2>
 				</header>
-				<div class="suite__content js-demo">
-					
-				</div>
+				<div class="suite__content js-demo" id="demo"></div>
 			</article>
 
 			<article class="suite"> 
@@ -63,6 +57,7 @@
 		</div>
 	</main>
 
-	<script src="./es6.js"></script>
+	<script src="/specs.es6.js"></script>
+	<script>runTests('attributes/media');</script>
 </body>
 </html>

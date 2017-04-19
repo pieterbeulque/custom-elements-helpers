@@ -1,6 +1,12 @@
+import paths from 'rollup-plugin-includepaths';
+import resolve from 'rollup-plugin-node-resolve';
+
 export default {
-	entry: 'tests/attributes-media.js',
+	entry: 'tests/specs.js',
 	format: 'cjs',
-	plugins: [],
-	dest: 'tests/es6.js'
+	plugins: [
+		resolve(),
+		paths({ paths: ['src'] })
+	],
+	dest: 'tests/specs.es6.js'
 };
