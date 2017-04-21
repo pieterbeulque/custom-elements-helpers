@@ -56,17 +56,17 @@ export default class BaseController {
 		const parsedTarget = !target ? this.el : target;
 
 		let wrappedHandler = function (e) {
-			handler(e, e.currentTarget);
+			handler(e, e.target);
 		};
 
 		if (selector) {
 			wrappedHandler = function (e) {
 				const path = getPath(e);
 
-				const currentTarget = path.find((tag) => tag.matches && tag.matches(selector));
+				const matchingTarget = path.find((tag) => tag.matches && tag.matches(selector));
 
-				if (currentTarget) {
-					handler(e, currentTarget);
+				if (matchingTarget) {
+					handler(e, matchingTarget);
 				}
 			};
 		}
@@ -87,9 +87,9 @@ export default class BaseController {
 	}
 
 	once(name, handler, target = null, options = false) {
-		const wrappedHandler = (e, currentTarget) => {
+		const wrappedHandler = (e, matchingTarget) => {
 			this.off(name, target);
-			handler(e, currentTarget);
+			handler(e, matchingTarget);
 		};
 
 		this.on(name, wrappedHandler, target, options);
