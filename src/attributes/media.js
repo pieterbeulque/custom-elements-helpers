@@ -5,7 +5,7 @@ export default class AttrMedia {
 	static attachTo(customElement) {
 		const noop = function () {};
 
-		let mq;
+		const watchers = {};
 
 		// Adds customElement.media
 		// @return string 		Value of `media=""` attribute
@@ -27,17 +27,17 @@ export default class AttrMedia {
 		// @return Promise
 		addMethod(customElement, 'whenMediaMatches', function whenMediaMatches() {
 			const defer = new Promise((resolve) => {
-				const handler = function () {
-					if (mq.matches) {
+				const handler = function (media) {
+					if (media.matches) {
 						resolve();
-						mq.removeListener(handler);
+						media.removeListener(handler);
 					}
 				};
 
 				if ('matchMedia' in window) {
-					mq = mq || window.matchMedia(this.media);
-					mq.addListener(handler);
-					handler(mq);
+					watchers[this.media] = watchers[this.media] || window.matchMedia(this.media);
+					watchers[this.media].addListener(() => handler(watchers[this.media]));
+					handler(watchers[this.media]);
 				} else {
 					resolve();
 				}
@@ -50,17 +50,17 @@ export default class AttrMedia {
 		// @return Promise
 		addMethod(customElement, 'whenMediaUnmatches', function whenMediaUnmatches() {
 			const defer = new Promise((resolve) => {
-				const handler = function () {
-					if (mq.matches) {
+				const handler = function (media) {
+					if (media.matches) {
 						resolve();
-						mq.removeListener(handler);
+						media.removeListener(handler);
 					}
 				};
 
 				if ('matchMedia' in window) {
-					mq = mq || window.matchMedia(this.media);
-					mq.addListener(handler);
-					handler(mq);
+					watchers[this.media] = watchers[this.media] || window.matchMedia(this.media);
+					watchers[this.media].addListener(() => handler(watchers[this.media]));
+					handler(watchers[this.media]);
 				} else {
 					resolve();
 				}
@@ -70,8 +70,8 @@ export default class AttrMedia {
 		});
 
 		addMethod(customElement, 'watchMedia', function watchMedia(match = noop, unmatch = noop) {
-			const handler = function () {
-				if (mq.matches) {
+			const handler = function (media) {
+				if (media.matches) {
 					match();
 				} else {
 					unmatch();
@@ -79,9 +79,9 @@ export default class AttrMedia {
 			};
 
 			if ('matchMedia' in window) {
-				mq = mq || window.matchMedia(this.media);
-				mq.addListener(handler);
-				handler(mq);
+				watchers[this.media] = watchers[this.media] || window.matchMedia(this.media);
+				watchers[this.media].addListener(() => handler(watchers[this.media]));
+				handler(watchers[this.media]);
 			}
 		});
 	}
