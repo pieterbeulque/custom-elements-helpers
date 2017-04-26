@@ -53,6 +53,20 @@ export function renderNodes(content, container) {
 	for (let i = content.children.length - 1; i >= 0; i -= 1) {
 		const child = content.children[i];
 
+		Array.from(content.getElementsByTagName('img'), (img) => {
+			const clone = document.createElement('img');
+			clone.src = img.src;
+			clone.sizes = img.sizes;
+			clone.srcset = img.srcset;
+			clone.className = img.className;
+			clone.width = img.width;
+			clone.height = img.height;
+
+			img.parentNode.replaceChild(clone, img);
+
+			return clone;
+		});
+
 		if (container.firstChild) {
 			container.insertBefore(child, container.firstChild);
 		} else {
