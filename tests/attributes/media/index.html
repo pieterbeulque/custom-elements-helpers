@@ -3,59 +3,66 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Custom Elements Helpers — Tests</title>
+	<link rel="stylesheet" href="https://mrhenry.github.io/limbo-styleguide/limbo.css">
 	<link rel="stylesheet" href="/assets/stylesheets/application.css">
 
 	<!-- Testing Suite -->
 	<link rel="stylesheet" href="/assets/stylesheets/mocha.css">
 </head>
 <body>
-	<header class="site-header">
-		<div class="wrapper">
-			<h1 class="site-header__logo">
-				Custom Elements Helpers<br>
-				<span>Attributes</span> <span>Media</span>
-			</h1>
+	<div class="app-bar">
+		<a href="/" class="button button--primary button--small">
+			Back
+		</a>
+	</div>
 
-			<nav class="site-header__navigation">
-				<ul>
-					<li>
-						<a href="https://github.com/mrhenry/custom-elements-helpers">
-							View on Github
-						</a>
-					</li>
-				</ul>
-			</nav>
-		</div>
-	</header>
+	<div class="section">
+		<div class="app-wrapper">
+			<h2>Media</h2>
 
-	<main class="site-content">
-		<div class="wrapper">
-			<article class="suite">
-				<header class="suite__header">
-					<h2>Usage</h2>
-				</header>
-				<div class="suite__content">
-					<p>
-						The media attribute adds <strong>media query support</strong> to your custom element.
-					</p>
+			<div class="card">
+				<div class="card__header">
+					<h2 class="card__title">
+						Usage
+					</h2>
 				</div>
-			</article>
 
-			<article class="suite">
-				<header class="suite__header">
-					<h2>Demo</h2>
-				</header>
-				<div class="suite__content js-demo" id="demo"></div>
-			</article>
+				<div class="card__content">
+					<div class="card__section">
+						The media attribute adds media query support to your custom element.
+					</div>
+				</div>
+			</div>
 
-			<article class="suite"> 
-				<header class="suite__header">
-					<h2>Tests</h2>
-				</header>
-				<div class="suite__content" id="mocha"></div>
-			</article>
+			<div class="card">
+				<div class="card__header">
+					<h2 class="card__title">
+						Demo
+					</h2>
+				</div>
+
+				<div class="card__content">
+					<div class="card__section">
+						<div class="js-demo" id="demo"></div>
+					</div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="card__header">
+					<h2 class="card__title">
+						Tests
+					</h2>
+				</div>
+
+				<div class="card__content">
+					<div class="card__section">
+						<div id="mocha"></div>
+					</div>
+				</div>
+			</div>
 		</div>
-	</main>
+	</div>
 
 	<script src="/specs.es6.js"></script>
 	<script>runTests('attributes/media');</script>

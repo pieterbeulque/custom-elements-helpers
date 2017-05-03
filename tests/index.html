@@ -3,44 +3,72 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Custom Elements Helpers — Tests</title>
-	<link rel="stylesheet" href="assets/stylesheets/application.css">
+	<link rel="stylesheet" href="https://mrhenry.github.io/limbo-styleguide/limbo.css">
+	<link rel="stylesheet" href="/assets/stylesheets/application.css">
 </head>
 <body>
-	<header class="site-header">
-		<div class="wrapper">
-			<h1 class="site-header__logo">
+	<div class="hero">
+		<div class="hero__content">
+			<h1 class="hero__title">
 				Custom Elements Helpers
 			</h1>
 
-			<nav class="site-header__navigation">
-				<ul>
-					<li>
-						<a href="https://github.com/mrhenry/custom-elements-helpers">
-							View on Github
-						</a>
-					</li>
-				</ul>
-			</nav>
+			<div class="hero__tagline">
+				<p>
+					A toolbox full of helpers for the<br>
+					brand new Custom Elements spec.
+				</p>
+
+				<a href="https://github.com/mrhenry/custom-elements-helpers" class="button">
+					View on Github
+				</a>
+			</div>
 		</div>
-	</header>
+	</div>
 
-	<main class="site-content">
-		<div class="wrapper">
-			<article class="suite">
-				<header class="suite__header">
-					<h2>Attributes</h2>
+	<div class="section">
+		<div class="app-wrapper">
+			<h2>
+				Attributes
+			</h2>
+
+			<article class="card">
+				<header class="card__header">
+					<h3 class="card__title">
+						Media
+					</h3>
+
+					<div class="card__secondary-actions">
+						<a href="attributes/media/index.html" class="button button--small button--link">
+							Show tests
+						</a>
+					</div>
 				</header>
-				<div class="suite__content has-no-padding">
-					<ul class="tests">
-						<li class="test is-success">
-							<strong>media</strong>
 
-							<a href="attributes/media/index.html">View Details</a>
-						</li>
-					</ul>
+				<div class="card__content">
+					<div class="card__section">
+						<p>
+							The media attribute adds media query support to your custom element.
+						</p>
+					</div>
+
+					<div class="card__section">
+						<h4 class="card__section__title">
+							Properties
+						</h4>
+
+						<ul>
+							<li>
+								<code>media</code> - <code>string</code> - Value of the media attribute
+							</li>
+
+							<li>
+								<code>matchesMedia</code> - <code>boolean</code> - True when the current viewport matches the media query</li>
+						</ul>
+					</div>
 				</div>
 			</article>
 		</div>
-	</main>
+	</div>
 </body>
 </html>
