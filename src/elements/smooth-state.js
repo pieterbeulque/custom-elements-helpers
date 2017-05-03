@@ -90,27 +90,21 @@ export default {
 				}
 			}, window);
 
-			this.on('click a', (e) => {
-				let node = e.target;
-				const path = Object.assign([], e.path);
-
-				while (path.length > 0 && node && node.tagName && node.tagName.toLowerCase() !== 'a') {
-					node = path.shift();
-
-					// Not an `<a>` in the path if we arrived at the smoothState element
-					if (node === this.el) {
-						return;
-					}
-				}
-
-				if (node.classList && node.classList.contains('js-mr-smooth-state-disable')) {
+			this.on('click a', (e, target) => {
+				if (target.classList && target.classList.contains('js-mr-smooth-state-disable')) {
 					return;
 				}
 
 				e.preventDefault();
 				e.stopPropagation();
 
-				const href = node.getAttribute('href');
+				const href = target.getAttribute('href');
+
+				if (!href) {
+					console.warn('Click on link without href');
+					return;
+				}
+
 				this.goTo(href).catch((err) => {
 					console.warn('Could not navigate to', href);
 					console.warn('Error:', err);
@@ -193,4 +187,3 @@ export default {
 
 	},
 };
-
