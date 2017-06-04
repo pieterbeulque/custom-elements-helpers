@@ -1,4 +1,5 @@
 import { parse as parseEvent, getPath } from '../util/events';
+import promisify from '../util/promise';
 
 export default class BaseController {
 
@@ -7,7 +8,12 @@ export default class BaseController {
 
 		this.resolve().then(() => {
 			this.el.classList.add('is-resolved');
-			return this.init().render().bind();
+
+			const init = () => promisify(this.init);
+			const render = () => promisify(this.render);
+			const bind = () => promisify(this.bind);
+
+			return init().then(() => render().then(() => bind().then(() => this)));
 		});
 	}
 
@@ -33,11 +39,11 @@ export default class BaseController {
 		});
 	}
 
-	init() { return this; }
+	init() { }
 
-	bind() { return this; }
+	render() { }
 
-	render() { return this; }
+	bind() { }
 
 	unbind() {
 		if (this._handlers) {

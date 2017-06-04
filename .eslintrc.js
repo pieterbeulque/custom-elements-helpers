@@ -21,7 +21,7 @@ module.exports = {
         "no-param-reassign": [ "error", { "props": true, "ignorePropertyModificationsFor": [ "customElement" ] } ],
         "class-methods-use-this": [ "error", { "exceptMethods": [
             // BaseController
-            "resolve",
+            "resolve", "init", "render", "bind",
             // SmoothState
             "onBefore", "onStart", "onReady", "onAfter"
         ] } ]

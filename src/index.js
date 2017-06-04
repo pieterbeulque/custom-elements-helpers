@@ -12,3 +12,4 @@ export { default as smoothState } from './elements/smooth-state';
 // Utilities
 export { default as defineCustomElement} from './util/define';
 export { parseHTML, renderNodes, cleanNodes } from './util/html';
+export { default as promisify } from './util/promise';
