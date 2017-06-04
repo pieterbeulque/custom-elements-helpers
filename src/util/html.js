@@ -59,8 +59,14 @@ export function renderNodes(content, container) {
 			clone.sizes = img.sizes;
 			clone.srcset = img.srcset;
 			clone.className = img.className;
-			clone.width = img.width;
-			clone.height = img.height;
+
+			if (!!img.getAttribute('width')) {
+				clone.width = img.width;
+			}
+
+			if (!!img.getAttribute('height')) {
+				clone.height = img.height;
+			}
 
 			img.parentNode.replaceChild(clone, img);
 
