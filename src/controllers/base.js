@@ -9,9 +9,9 @@ export default class BaseController {
 		this.resolve().then(() => {
 			this.el.classList.add('is-resolved');
 
-			const init = () => promisify(this.init);
-			const render = () => promisify(this.render);
-			const bind = () => promisify(this.bind);
+			const init = () => promisify(() => this.init());
+			const render = () => promisify(() => this.render());
+			const bind = () => promisify(() => this.bind());
 
 			return init().then(() => render().then(() => bind().then(() => this)));
 		});
