@@ -60,11 +60,11 @@ export function renderNodes(content, container) {
 			clone.srcset = img.srcset;
 			clone.className = img.className;
 
-			if (!!img.getAttribute('width')) {
+			if (img.getAttribute('width')) {
 				clone.width = img.width;
 			}
 
-			if (!!img.getAttribute('height')) {
+			if (img.getAttribute('height')) {
 				clone.height = img.height;
 			}
 
