@@ -1,6 +1,17 @@
 import BaseController from '../controllers/base';
 import fetchJSONP from '../util/fetch';
 
+const convertFormDataToQuerystring = function (values) {
+	return Array.from(values, ([key, raw]) => {
+		if (raw) {
+			const value = window.encodeURIComponent(raw);
+			return `${key}=${value}`;
+		}
+
+		return '';
+	}).join('&');
+};
+
 export default {
 	attributes: [
 		{ attribute: 'jsonp', type: 'bool' },
@@ -23,20 +34,7 @@ export default {
 			return new FormData(this.elements.form);
 		}
 
-		get valuesAsQuerystring() {
-			return Array.from(this.values, ([key, raw]) => {
-				if (raw) {
-					const value = window.encodeURIComponent(raw);
-					return `${key}=${value}`;
-				}
-
-				return '';
-			}).join('&');
-		}
-
 		init() {
-			this.errorMessages = [];
-
 			this.elements = this.elements || {};
 			this.elements.form = this.el.getElementsByTagName('form')[0];
 			this.elements.successMessage = this.el.getElementsByClassName('js-ajax-form-success')[0];
@@ -55,6 +53,7 @@ export default {
 		render() {
 			// We can disable the HTML5 front-end validation
 			// and handle it more gracefully in JS
+			// @todo
 			this.elements.form.setAttribute('novalidate', 'novalidate');
 
 			return this;
@@ -62,8 +61,13 @@ export default {
 
 		bind() {
 			const reset = () => {
-				this.elements.successMessage.setAttribute('hidden', 'hidden');
-				this.elements.errorMessage.setAttribute('hidden', 'hidden');
+				if (this.elements.successMessage) {
+					this.elements.successMessage.setAttribute('hidden', 'hidden');
+				}
+
+				if (this.elements.errorMessage) {
+					this.elements.errorMessage.setAttribute('hidden', 'hidden');
+				}
 			};
 
 			this.on('submit', (e) => {
@@ -86,31 +90,35 @@ export default {
 
 		prepare(method) {
 			const get = () => {
-				const querystring = this.valuesAsQuerystring;
+				const querystring = convertFormDataToQuerystring(this.values);
 				const url = `${this.action}?${querystring}`;
-				const params = {};
-				params.method = this.method;
-				params.headers = new Headers({
-					'Content-Type': 'application/json',
-				});
+				const params = {
+					method: 'GET',
+					headers: new Headers({
+						'Content-Type': 'application/json',
+					}),
+				};
 
 				return { url, params };
 			};
 
 			const post = () => {
 				const url = this.action;
-				const params = {};
-				params.method = this.method;
-				params.headers = new Headers({
-					'Content-Type': 'application/x-www-form-urlencoded',
-				});
+				const params = {
+					method: 'POST',
+					headers: new Headers({
+						'Content-Type': 'application/x-www-form-urlencoded',
+					}),
+				};
 
 				return { url, params };
 			};
 
-			if (method === 'GET') {
+			if (method.toUpperCase() === 'GET') {
 				return get();
-			} else if (method === 'POST') {
+			}
+
+			if (method.toUpperCase() === 'POST') {
 				return post();
 			}
 
@@ -141,30 +149,18 @@ export default {
 
 		// eslint-disable-next-line no-unused-vars
 		onSuccess(res) {
-			this.elements.successMessage.removeAttribute('hidden');
+			if (this.elements.successMessage) {
+				this.elements.successMessage.removeAttribute('hidden');
+			}
+
 			this.elements.form.parentNode.removeChild(this.elements.form);
 		}
 
 		// eslint-disable-next-line no-unused-vars
 		onError(err) {
-			this.elements.errorMessage.removeAttribute('hidden');
-		}
-
-		validate() {
-			this.errorMessages.forEach((error) => {
-				error.parentNode.removeChild(error);
-			});
-
-			this.errorMessages = Array.from(this.elements.fields, (field) => {
-				if (!field.checkValidity()) {
-					const error = document.createElement('p');
-					error.textContent = field.validationMessage;
-					field.parentNode.appendChild(error);
-					return error;
-				}
-
-				return undefined;
-			}).filter((field) => !!field);
+			if (this.elements.errorMessage) {
+				this.elements.errorMessage.removeAttribute('hidden');
+			}
 		}
 
 	},
