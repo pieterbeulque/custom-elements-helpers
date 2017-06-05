@@ -153,19 +153,13 @@ Once the promise has resolved, your custom element will have the `is-resolved` c
 
 Once your custom element instance is resolved, the `init` method is called. You can do your initial setup here.
 
-*Note* - you have to `return this`. [There's an issue to remove that](https://github.com/mrhenry/custom-elements-helpers/issues/5).
-
 ##### Step 3: Render
 
 After your initial setup, the `render` method is called. You can assume a DOM-ready and configured environment here. `this.el` has a reference to the custom element DOM node so go wild (if you have to).
 
-*Note* - you have to `return this`. [There's an issue to remove that](https://github.com/mrhenry/custom-elements-helpers/issues/5).
-
 ##### Step 4: Bind
 
 With everything rendered, now's the time to attach your event listeners, using `this.on` and `this.once`. Read more below.
-
-*Note* - you have to `return this`. [There's an issue to remove that](https://github.com/mrhenry/custom-elements-helpers/issues/5).
 
 #### Working with events
 
