@@ -42,12 +42,9 @@ export default {
 
 			if (!this.elements.form) {
 				console.warn('Activated MrAjaxForm without a form');
-				return this;
+			} else {
+				this.elements.fields = this.elements.form.getElementsByTagName('input');
 			}
-
-			this.elements.fields = this.elements.form.getElementsByTagName('input');
-
-			return this;
 		}
 
 		render() {
@@ -55,8 +52,6 @@ export default {
 			// and handle it more gracefully in JS
 			// @todo
 			this.elements.form.setAttribute('novalidate', 'novalidate');
-
-			return this;
 		}
 
 		bind() {
@@ -84,8 +79,6 @@ export default {
 						this.onError(err);
 					});
 			}, this.elements.form);
-
-			return this;
 		}
 
 		prepare(method) {
@@ -131,9 +124,10 @@ export default {
 			}
 
 			return fetch(url, params).then((res) => {
-				if (res.status && res.status.ok) {
+				if (res.status && res.status === 200) {
 					return res;
 				}
+
 				const error = new Error(res.statusText);
 				throw error;
 			}).then((res) => {
