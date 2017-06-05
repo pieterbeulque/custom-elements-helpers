@@ -18,7 +18,7 @@ const { defineTests, runTests } = (function () {
 	};
 
 	return {
-		defineTests: function (key, spec) {
+		defineTests(key, spec) {
 			if (tests[key]) {
 				console.warn(`Test suite ${key} already exists. Will override`);
 			}
@@ -46,19 +46,18 @@ const { defineTests, runTests } = (function () {
 					if (typeof spec.after === 'function') {
 						spec.after();
 					}
-				}
+				};
 			}
 		},
-		runTests: function (key) {
+		runTests(key) {
 			if (!tests[key]) {
 				console.warn(`Test suite ${key} does not exists`);
 			}
 
 			tests[key]();
-		}
+		},
 	};
-
-})();
+}());
 
 const generateDemoNode = function (tag, definition = {}, options = {}) {
 	const node = document.createElement(tag);
@@ -67,13 +66,11 @@ const generateDemoNode = function (tag, definition = {}, options = {}) {
 	let customElement;
 	let copy;
 
-	const controller = class extends BaseController {
+	const controller = class extends definition.controller {
 
 		constructor(el) {
 			super(el);
 			demo.customElement = this;
-
-			console.log('Bind custom element', demo);
 
 			if (definition.controller) {
 				copy = new (class extends definition.controller {
@@ -115,7 +112,7 @@ const generateDemoNode = function (tag, definition = {}, options = {}) {
 
 	defineCustomElement(tag, {
 		attributes: definition.attributes || [],
-		controller: controller
+		controller,
 	});
 
 	return demo;

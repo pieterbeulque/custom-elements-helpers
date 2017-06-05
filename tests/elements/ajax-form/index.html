@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Custom Elements Helpers — Tests</title>
+	<link rel="stylesheet" href="https://mrhenry.github.io/limbo-styleguide/assets/css/limbo.css">
+	<link rel="stylesheet" href="/assets/stylesheets/application.css">
+
+	<!-- Testing Suite -->
+	<link rel="stylesheet" href="/assets/stylesheets/mocha.css">
+</head>
+<body>
+	<div class="app-bar">
+		<a href="/" class="button button--primary button--small">
+			Back
+		</a>
+	</div>
+
+	<div class="section">
+		<div class="app-wrapper">
+			<h2>Ajax Form</h2>
+
+			<div class="card">
+				<div class="card__header">
+					<h2 class="card__title">
+						Usage
+					</h2>
+				</div>
+
+				<div class="card__content">
+					<div class="card__section">
+						You can wrap the AJAX form custom element around a <code>&lt;form&gt;</code> to submit the form through <code>fetch</code> instead of needing a page refresh.
+					</div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="card__header">
+					<h2 class="card__title">
+						Demo
+					</h2>
+				</div>
+
+				<div class="card__content">
+					<div class="card__section">
+						<div class="js-demo" id="demo">
+							<form action="?test" method="get">
+								<div class="form-group">
+									<input type="text" class="input" placeholder="Name" name="name">
+								</div>
+
+								<div class="form-group">
+									<input type="email" class="input" placeholder="E-mail" name="email">
+								</div>
+
+								<div class="form-group">
+									<input type="submit" class="button button--primary" value="Submit">
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="card__header">
+					<h2 class="card__title">
+						Tests
+					</h2>
+				</div>
+
+				<div class="card__content">
+					<div class="card__section">
+						<div id="mocha"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="/specs.es6.js"></script>
+	<script>runTests('elements/ajax-form');</script>
+</body>
+</html>

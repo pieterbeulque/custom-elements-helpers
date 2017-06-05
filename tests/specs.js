@@ -7,6 +7,7 @@ mocha.setup('tdd');
 
 // Import all specs
 import './attributes/media/spec.js';
+import './elements/ajax-form/spec.js';
 
 // In your HTML file,
 // trigger the needed suite by running
