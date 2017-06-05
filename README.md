@@ -21,7 +21,9 @@ The `media` attribute adds media query support to your custom element.
 
 #### Methods
  
- - `whenMediaMatches()` - Returns a `Promise` that resolves once when the media query first is matched
+ - `whenMediaMatches()` - Returns a `Promise` that resolves once the media query first is matched
+ - `whenMediaUnmatches()` - Returns a `Promise` that resolves once the media query first is unmatched
+ - `watchMedia(match, unmatch)` - Takes two callbacks that are called when the media query matches and unmatches, respectively
 
 #### Example usage
 
