@@ -230,6 +230,58 @@ Remove all event listeners that you registered through `on` or `once`.
 
 ## Elements
 
+### AJAX Form
+
+Wrap AJAX form around a working `<form>` to have it send over AJAX.  
+Form submits are supported over `GET`, `POST` and JSONP (with the `jsonp` attribute).
+
+The AJAX form submits all form data to the form's `action`, using the form's `method`.
+
+By default, it looks for an element with class `js-ajax-form-success` to show when the submit was successful. When a form submit is successful, the form will be removed (by default). Likewise, it looks for an element with class `js-ajax-form-error` to show an error message. 
+
+Override the default success & error handlers by overriding `onSuccess(res)` and `onError(err)`.
+
+#### Roadmap
+
+ - Client-side form validation
+ - Handling server-side form validation
+ - Per-field error messages
+
+#### Attributes
+
+ - `jsonp` - `boolean` - Needs JSONP for AJAX handling (e.g. createsend)
+
+#### Example usage
+
+```js
+import { defineCustomElement, ajaxForm } from 'custom-elements-helpers';
+
+defineCustomElement('my-ajax-form', {
+	attributes: ajaxForm.attributes,
+	controller: class extends ajaxForm.controller {
+	
+		onSuccess(res) {
+			// Custom success handler
+		}
+		
+		onError(err) {
+			// Custom error handler
+		}
+	
+	}
+});
+```
+
+```html
+<my-ajax-form>
+	<form action="/subscribe" method="POST">
+		<input type="email" name="email" />
+		<input type="submit" value="Subscribe" />
+	</form>
+</my-ajax-form>
+```
+
+
 ### Key Trigger
 
 You can use key trigger to bind a key to an anchor. It'll look for the `href` attribute on itself or on the first child that has one and trigger the `click` event on it.
