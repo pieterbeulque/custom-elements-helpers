@@ -21,7 +21,9 @@ The `media` attribute adds media query support to your custom element.
 
 #### Methods
  
- - `whenMediaMatches()` - Returns a `Promise` that resolves once when the media query first is matched
+ - `whenMediaMatches()` - Returns a `Promise` that resolves once the media query first is matched
+ - `whenMediaUnmatches()` - Returns a `Promise` that resolves once the media query first is unmatched
+ - `watchMedia(match, unmatch)` - Takes two callbacks that are called when the media query matches and unmatches, respectively
 
 #### Example usage
 
@@ -153,19 +155,13 @@ Once the promise has resolved, your custom element will have the `is-resolved` c
 
 Once your custom element instance is resolved, the `init` method is called. You can do your initial setup here.
 
-*Note* - you have to `return this`. [There's an issue to remove that](https://github.com/mrhenry/custom-elements-helpers/issues/5).
-
 ##### Step 3: Render
 
 After your initial setup, the `render` method is called. You can assume a DOM-ready and configured environment here. `this.el` has a reference to the custom element DOM node so go wild (if you have to).
 
-*Note* - you have to `return this`. [There's an issue to remove that](https://github.com/mrhenry/custom-elements-helpers/issues/5).
-
 ##### Step 4: Bind
 
 With everything rendered, now's the time to attach your event listeners, using `this.on` and `this.once`. Read more below.
-
-*Note* - you have to `return this`. [There's an issue to remove that](https://github.com/mrhenry/custom-elements-helpers/issues/5).
 
 #### Working with events
 
@@ -233,6 +229,58 @@ Remove the `is-resolved` class from the element.
 Remove all event listeners that you registered through `on` or `once`.
 
 ## Elements
+
+### AJAX Form
+
+Wrap AJAX form around a working `<form>` to have it send over AJAX.  
+Form submits are supported over `GET`, `POST` and JSONP (with the `jsonp` attribute).
+
+The AJAX form submits all form data to the form's `action`, using the form's `method`.
+
+By default, it looks for an element with class `js-ajax-form-success` to show when the submit was successful. When a form submit is successful, the form will be removed (by default). Likewise, it looks for an element with class `js-ajax-form-error` to show an error message. 
+
+Override the default success & error handlers by overriding `onSuccess(res)` and `onError(err)`.
+
+#### Roadmap
+
+ - Client-side form validation
+ - Handling server-side form validation
+ - Per-field error messages
+
+#### Attributes
+
+ - `jsonp` - `boolean` - Needs JSONP for AJAX handling (e.g. createsend)
+
+#### Example usage
+
+```js
+import { defineCustomElement, ajaxForm } from 'custom-elements-helpers';
+
+defineCustomElement('my-ajax-form', {
+	attributes: ajaxForm.attributes,
+	controller: class extends ajaxForm.controller {
+	
+		onSuccess(res) {
+			// Custom success handler
+		}
+		
+		onError(err) {
+			// Custom error handler
+		}
+	
+	}
+});
+```
+
+```html
+<my-ajax-form>
+	<form action="/subscribe" method="POST">
+		<input type="email" name="email" />
+		<input type="submit" value="Subscribe" />
+	</form>
+</my-ajax-form>
+```
+
 
 ### Key Trigger
 
