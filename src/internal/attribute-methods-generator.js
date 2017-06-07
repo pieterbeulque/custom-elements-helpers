@@ -22,8 +22,8 @@ const generateBoolAttributeMethods = function (attribute) {
 	};
 
 	const setter = function (to) {
-		if (to) {
-			this.el.setAttribute(attribute, attribute);
+		if (typeof to === 'string' || !!to) {
+			this.el.setAttribute(attribute, '');
 		} else {
 			this.el.removeAttribute(attribute);
 		}
