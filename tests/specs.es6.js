@@ -22345,6 +22345,276 @@ Library.prototype.test = function(obj, type) {
 },{}]},{},[1])(1)
 });
 
+const addMethod = function (customElement, name, method) {
+	if (typeof customElement.prototype[name] !== 'undefined') {
+		console.warn(`${customElement.name} already has a property ${name}`);
+	}
+
+	customElement.prototype[name] = method;
+};
+
+const addGetter = function (customElement, name, method) {
+	if (typeof customElement.prototype[name] !== 'undefined') {
+		console.warn(`${customElement.name} already has a property ${name}`);
+	}
+
+	Object.defineProperty(customElement.prototype, name, {
+		configurable: false,
+		get: method,
+	});
+};
+
+const addProperty = function (customElement, name, getter = null, setter = null) {
+	if (typeof customElement.prototype[name] !== 'undefined') {
+		console.warn(`${customElement.name} already has a property ${name}`);
+	}
+
+	const noop = function () {};
+
+	Object.defineProperty(customElement.prototype, name, {
+		configurable: false,
+		get: typeof getter === 'function' ? getter : noop,
+		set: typeof setter === 'function' ? setter : noop,
+	});
+};
+
+const noop = function () {};
+
+const generateStringAttributeMethods = function (attribute) {
+	const getter = function () {
+		return this.el.getAttribute(attribute) || undefined;
+	};
+
+	const setter = function (to) {
+		if (to) {
+			this.el.setAttribute(attribute, to);
+		} else {
+			this.el.removeAttribute(attribute);
+		}
+	};
+
+	return { getter, setter };
+};
+
+const generateBoolAttributeMethods = function (attribute) {
+	const getter = function () {
+		return !!this.el.hasAttribute(attribute);
+	};
+
+	const setter = function (to) {
+		if (to) {
+			this.el.setAttribute(attribute, attribute);
+		} else {
+			this.el.removeAttribute(attribute);
+		}
+	};
+
+	return { getter, setter };
+};
+
+const generateIntegerAttributeMethods = function (attribute) {
+	const getter = function () {
+		return parseInt(this.el.getAttribute(attribute), 10);
+	};
+
+	const setter = function (to) {
+		const parsed = parseInt(to, 10);
+
+		if (!Number.isNaN(parsed)) {
+			this.el.setAttribute(attribute, parsed);
+		} else {
+			console.warn(`Could not set ${attribute} to ${to}`);
+			this.el.removeAttribute(attribute);
+		}
+	};
+
+	return { getter, setter };
+};
+
+const generateNumberAttributeMethods = function (attribute) {
+	const getter = function () {
+		return parseFloat(this.el.getAttribute(attribute));
+	};
+
+	const setter = function (to) {
+		const parsed = parseFloat(to);
+
+		if (!Number.isNaN(parsed)) {
+			this.el.setAttribute(attribute, parsed);
+		} else {
+			console.warn(`Could not set ${attribute} to ${to}`);
+			this.el.removeAttribute(attribute);
+		}
+	};
+
+	return { getter, setter };
+};
+
+const generateAttributeMethods = function (attribute, type = 'string') {
+	if (type === 'bool') {
+		return generateBoolAttributeMethods(attribute);
+	} else if (type === 'int' || type === 'integer') {
+		return generateIntegerAttributeMethods(attribute);
+	} else if (type === 'float' || type === 'number') {
+		return generateNumberAttributeMethods(attribute);
+	} else if (type === 'string') {
+		return generateStringAttributeMethods(attribute);
+	}
+	return { getter: noop, setter: noop };
+};
+
+function defineCustomElement(tag, options = {}) {
+	// Attach all passed attributes to the passed controller
+	if (options.attributes && options.attributes.length) {
+		options.attributes.forEach((attribute) => {
+			// String, sync with actual element attribute
+			if (typeof attribute === 'string') {
+				const { getter, setter } = generateAttributeMethods(attribute, 'string');
+				addProperty(options.controller, attribute, getter, setter);
+			} else if (typeof attribute.attachTo === 'function') {
+				attribute.attachTo(options.controller);
+			} else if (typeof attribute === 'object') {
+				const type = attribute.type || 'string';
+				const name = attribute.attribute;
+
+				const { getter, setter } = generateAttributeMethods(name, type);
+
+				addProperty(options.controller, name, getter, setter);
+			}
+		});
+	}
+
+	return customElements.define(tag, class extends HTMLElement {
+
+		connectedCallback() {
+			this.controller = new options.controller(this);
+		}
+
+		disconnectedCallback() {
+			this.controller.destroy();
+		}
+
+	});
+}
+
+/* global mocha */
+
+const generateDemoNode = function (tag, definition = {}) {
+	const node = document.createElement(tag);
+	const demo = { node };
+
+	let copy;
+
+	const controller = class extends definition.controller {
+
+		constructor(el) {
+			super(el);
+			demo.customElement = this;
+
+			if (definition.controller) {
+				copy = new (class extends definition.controller {
+					resolve() { return Promise.reject(); }
+				})(el);
+			}
+		}
+
+		destroy() {
+			demo.customElement = null;
+			copy = null;
+			copy.destroy.apply(this);
+			super.destroy();
+		}
+
+		init() {
+			copy.init.apply(this);
+			return this;
+		}
+
+		bind() {
+			copy.bind.apply(this);
+			return this;
+		}
+
+		render() {
+			copy.render.apply(this);
+			mocha.run();
+			return this;
+		}
+
+		resolve() {
+			return Promise.all([
+				super.resolve(),
+			]);
+		}
+
+	};
+
+	defineCustomElement(tag, {
+		attributes: definition.attributes || [],
+		controller,
+	});
+
+	return demo;
+};
+
+const { defineTests, runTests } = (function testHelpersGenerator() {
+	const tests = {};
+
+	const sanitizeKey = function (key, prefix = 'test') {
+		const validPrefix = typeof prefix === 'string' ? prefix : 'test';
+
+		const sanitized = key
+			.toLowerCase()
+			.replace(/[^a-z]/gi, '-')
+			.replace(/-+/gi, '-')
+			.replace(/-$/, '')
+			.replace(/^-/, '');
+
+		return `${validPrefix}-${sanitized}`;
+	};
+
+	return {
+		defineTests(key, spec) {
+			if (tests[key]) {
+				console.warn(`Test suite ${key} already exists. Will override`);
+			}
+
+			if (typeof spec === 'function') {
+				tests[key] = function runSpec() {
+					spec();
+				};
+			} else if (typeof spec === 'object') {
+				tests[key] = function runSpec() {
+					let env = { node: document.createElement('div') };
+
+					if (typeof spec.demo === 'object') {
+						env = generateDemoNode(sanitizeKey(key), spec.demo);
+					}
+
+					if (typeof spec.before === 'function') {
+						spec.before(env);
+					}
+
+					if (typeof spec.run === 'function') {
+						spec.run(env);
+					}
+
+					if (typeof spec.after === 'function') {
+						spec.after();
+					}
+				};
+			}
+		},
+		runTests(key) {
+			if (!tests[key]) {
+				console.warn(`Test suite ${key} does not exists`);
+			}
+
+			tests[key]();
+		},
+	};
+}());
+
 function parse(name) {
 	const clean = name.trim();
 	const parts = clean.split(' ');
@@ -22401,16 +22671,14 @@ class BaseController {
 			this.el.classList.add('is-resolved');
 
 			const init = () => promisify(() => {
-				console.log('this.init()');
 				this.init();
 			});
+
 			const render = () => promisify(() => {
-				console.log('this.render()');
 				this.render();
 			});
 
 			const bind = () => promisify(() => {
-				console.log('this.bind()');
 				this.bind();
 			});
 
@@ -22547,39 +22815,6 @@ class BaseController {
 	}
 
 }
-
-const addMethod = function (customElement, name, method) {
-	if (typeof customElement.prototype[name] !== 'undefined') {
-		console.warn(`${customElement.name} already has a property ${name}`);
-	}
-
-	customElement.prototype[name] = method;
-};
-
-const addGetter = function (customElement, name, method) {
-	if (typeof customElement.prototype[name] !== 'undefined') {
-		console.warn(`${customElement.name} already has a property ${name}`);
-	}
-
-	Object.defineProperty(customElement.prototype, name, {
-		configurable: false,
-		get: method,
-	});
-};
-
-const addProperty = function (customElement, name, getter = null, setter = null) {
-	if (typeof customElement.prototype[name] !== 'undefined') {
-		console.warn(`${customElement.name} already has a property ${name}`);
-	}
-
-	const noop = function () {};
-
-	Object.defineProperty(customElement.prototype, name, {
-		configurable: false,
-		get: typeof getter === 'function' ? getter : noop,
-		set: typeof setter === 'function' ? setter : noop,
-	});
-};
 
 class AttrMedia {
 
@@ -22941,244 +23176,7 @@ const parseHTML = (function parseHTML() {
 	};
 }());
 
-const noop = function () {};
-
-const generateStringAttributeMethods = function (attribute) {
-	const getter = function () {
-		return this.el.getAttribute(attribute) || undefined;
-	};
-
-	const setter = function (to) {
-		if (to) {
-			this.el.setAttribute(attribute, to);
-		} else {
-			this.el.removeAttribute(attribute);
-		}
-	};
-
-	return { getter, setter };
-};
-
-const generateBoolAttributeMethods = function (attribute) {
-	const getter = function () {
-		return !!this.el.hasAttribute(attribute);
-	};
-
-	const setter = function (to) {
-		if (to) {
-			this.el.setAttribute(attribute, attribute);
-		} else {
-			this.el.removeAttribute(attribute);
-		}
-	};
-
-	return { getter, setter };
-};
-
-const generateIntegerAttributeMethods = function (attribute) {
-	const getter = function () {
-		return parseInt(this.el.getAttribute(attribute), 10);
-	};
-
-	const setter = function (to) {
-		const parsed = parseInt(to, 10);
-
-		if (!Number.isNaN(parsed)) {
-			this.el.setAttribute(attribute, parsed);
-		} else {
-			console.warn(`Could not set ${attribute} to ${to}`);
-			this.el.removeAttribute(attribute);
-		}
-	};
-
-	return { getter, setter };
-};
-
-const generateNumberAttributeMethods = function (attribute) {
-	const getter = function () {
-		return parseFloat(this.el.getAttribute(attribute));
-	};
-
-	const setter = function (to) {
-		const parsed = parseFloat(to);
-
-		if (!Number.isNaN(parsed)) {
-			this.el.setAttribute(attribute, parsed);
-		} else {
-			console.warn(`Could not set ${attribute} to ${to}`);
-			this.el.removeAttribute(attribute);
-		}
-	};
-
-	return { getter, setter };
-};
-
-const generateAttributeMethods = function (attribute, type = 'string') {
-	if (type === 'bool') {
-		return generateBoolAttributeMethods(attribute);
-	} else if (type === 'int' || type === 'integer') {
-		return generateIntegerAttributeMethods(attribute);
-	} else if (type === 'float' || type === 'number') {
-		return generateNumberAttributeMethods(attribute);
-	} else if (type === 'string') {
-		return generateStringAttributeMethods(attribute);
-	}
-	return { getter: noop, setter: noop };
-};
-
-function defineCustomElement(tag, options = {}) {
-	// Attach all passed attributes to the passed controller
-	if (options.attributes && options.attributes.length) {
-		options.attributes.forEach((attribute) => {
-			// String, sync with actual element attribute
-			if (typeof attribute === 'string') {
-				const { getter, setter } = generateAttributeMethods(attribute, 'string');
-				addProperty(options.controller, attribute, getter, setter);
-			} else if (typeof attribute.attachTo === 'function') {
-				attribute.attachTo(options.controller);
-			} else if (typeof attribute === 'object') {
-				const type = attribute.type || 'string';
-				const name = attribute.attribute;
-
-				const { getter, setter } = generateAttributeMethods(name, type);
-
-				addProperty(options.controller, name, getter, setter);
-			}
-		});
-	}
-
-	return customElements.define(tag, class extends HTMLElement {
-
-		connectedCallback() {
-			this.controller = new options.controller(this);
-		}
-
-		disconnectedCallback() {
-			this.controller.destroy();
-		}
-
-	});
-}
-
 // Base Controller
-
-const { defineTests, runTests } = (function () {
-	const tests = {};
-
-	const sanitizeKey = function (key, prefix = 'test') {
-		if (!prefix) {
-			prefix = 'test';
-		}
-
-		const sanitized = key.toLowerCase()
-		                     .replace(/[^a-z]/gi, '-')
-		                     .replace(/\-+/gi, '-')
-		                     .replace(/\-$/, '')
-		                     .replace(/^-/, '');
-
-		return `${prefix}-${sanitized}`;
-	};
-
-	return {
-		defineTests(key, spec) {
-			if (tests[key]) {
-				console.warn(`Test suite ${key} already exists. Will override`);
-			}
-
-			if (typeof spec === 'function') {
-				tests[key] = function () {
-					spec();
-				};
-			} else if (typeof spec === 'object') {
-				tests[key] = function () {
-					let env = { node: document.createElement('div') };
-
-					if (typeof spec.demo === 'object') {
-						env = generateDemoNode(sanitizeKey(key), spec.demo);
-					}
-
-					if (typeof spec.before === 'function') {
-						spec.before(env);
-					}
-
-					if (typeof spec.run === 'function') {
-						spec.run(env);
-					}
-
-					if (typeof spec.after === 'function') {
-						spec.after();
-					}
-				};
-			}
-		},
-		runTests(key) {
-			if (!tests[key]) {
-				console.warn(`Test suite ${key} does not exists`);
-			}
-
-			tests[key]();
-		},
-	};
-}());
-
-const generateDemoNode = function (tag, definition = {}, options = {}) {
-	const node = document.createElement(tag);
-	const demo = { node };
-
-	let customElement;
-	let copy;
-
-	const controller = class extends definition.controller {
-
-		constructor(el) {
-			super(el);
-			demo.customElement = this;
-
-			if (definition.controller) {
-				copy = new (class extends definition.controller {
-					resolve() { return Promise.reject(); }
-				})(el);
-			}
-		}
-
-		destroy() {
-			customElement = null;
-			copy = null;
-			copy.destroy.apply(this);
-			super.destroy();
-		}
-
-		init() {
-			copy.init.apply(this);
-			return this;
-		}
-
-		bind() {
-			copy.bind.apply(this);
-			return this;
-		}
-
-		render() {
-			copy.render.apply(this);
-			mocha.run();
-			return this;
-		}
-
-		resolve() {
-			return Promise.all([
-				super.resolve(),
-			]);
-		}
-
-	};
-
-	defineCustomElement(tag, {
-		attributes: definition.attributes || [],
-		controller,
-	});
-
-	return demo;
-};
 
 // Setup
 defineTests('attributes/media', {

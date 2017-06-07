@@ -21861,6 +21861,322 @@ var slicedToArray = function () {
     }, {}] }, {}, [1])(1);
 });
 
+var addMethod = function addMethod(customElement, name, method) {
+	if (typeof customElement.prototype[name] !== 'undefined') {
+		console.warn(customElement.name + ' already has a property ' + name);
+	}
+
+	customElement.prototype[name] = method;
+};
+
+var addGetter = function addGetter(customElement, name, method) {
+	if (typeof customElement.prototype[name] !== 'undefined') {
+		console.warn(customElement.name + ' already has a property ' + name);
+	}
+
+	Object.defineProperty(customElement.prototype, name, {
+		configurable: false,
+		get: method
+	});
+};
+
+var addProperty = function addProperty(customElement, name) {
+	var getter = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+	var setter = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
+	if (typeof customElement.prototype[name] !== 'undefined') {
+		console.warn(customElement.name + ' already has a property ' + name);
+	}
+
+	var noop = function noop() {};
+
+	Object.defineProperty(customElement.prototype, name, {
+		configurable: false,
+		get: typeof getter === 'function' ? getter : noop,
+		set: typeof setter === 'function' ? setter : noop
+	});
+};
+
+var noop = function noop() {};
+
+var generateStringAttributeMethods = function generateStringAttributeMethods(attribute) {
+	var getter = function getter() {
+		return this.el.getAttribute(attribute) || undefined;
+	};
+
+	var setter = function setter(to) {
+		if (to) {
+			this.el.setAttribute(attribute, to);
+		} else {
+			this.el.removeAttribute(attribute);
+		}
+	};
+
+	return { getter: getter, setter: setter };
+};
+
+var generateBoolAttributeMethods = function generateBoolAttributeMethods(attribute) {
+	var getter = function getter() {
+		return !!this.el.hasAttribute(attribute);
+	};
+
+	var setter = function setter(to) {
+		if (to) {
+			this.el.setAttribute(attribute, attribute);
+		} else {
+			this.el.removeAttribute(attribute);
+		}
+	};
+
+	return { getter: getter, setter: setter };
+};
+
+var generateIntegerAttributeMethods = function generateIntegerAttributeMethods(attribute) {
+	var getter = function getter() {
+		return parseInt(this.el.getAttribute(attribute), 10);
+	};
+
+	var setter = function setter(to) {
+		var parsed = parseInt(to, 10);
+
+		if (!Number.isNaN(parsed)) {
+			this.el.setAttribute(attribute, parsed);
+		} else {
+			console.warn('Could not set ' + attribute + ' to ' + to);
+			this.el.removeAttribute(attribute);
+		}
+	};
+
+	return { getter: getter, setter: setter };
+};
+
+var generateNumberAttributeMethods = function generateNumberAttributeMethods(attribute) {
+	var getter = function getter() {
+		return parseFloat(this.el.getAttribute(attribute));
+	};
+
+	var setter = function setter(to) {
+		var parsed = parseFloat(to);
+
+		if (!Number.isNaN(parsed)) {
+			this.el.setAttribute(attribute, parsed);
+		} else {
+			console.warn('Could not set ' + attribute + ' to ' + to);
+			this.el.removeAttribute(attribute);
+		}
+	};
+
+	return { getter: getter, setter: setter };
+};
+
+var generateAttributeMethods = function generateAttributeMethods(attribute) {
+	var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'string';
+
+	if (type === 'bool') {
+		return generateBoolAttributeMethods(attribute);
+	} else if (type === 'int' || type === 'integer') {
+		return generateIntegerAttributeMethods(attribute);
+	} else if (type === 'float' || type === 'number') {
+		return generateNumberAttributeMethods(attribute);
+	} else if (type === 'string') {
+		return generateStringAttributeMethods(attribute);
+	}
+	return { getter: noop, setter: noop };
+};
+
+function defineCustomElement(tag) {
+	var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	// Attach all passed attributes to the passed controller
+	if (options.attributes && options.attributes.length) {
+		options.attributes.forEach(function (attribute) {
+			// String, sync with actual element attribute
+			if (typeof attribute === 'string') {
+				var _generateAttributeMet = generateAttributeMethods(attribute, 'string'),
+				    getter = _generateAttributeMet.getter,
+				    setter = _generateAttributeMet.setter;
+
+				addProperty(options.controller, attribute, getter, setter);
+			} else if (typeof attribute.attachTo === 'function') {
+				attribute.attachTo(options.controller);
+			} else if ((typeof attribute === 'undefined' ? 'undefined' : _typeof(attribute)) === 'object') {
+				var type = attribute.type || 'string';
+				var name = attribute.attribute;
+
+				var _generateAttributeMet2 = generateAttributeMethods(name, type),
+				    _getter = _generateAttributeMet2.getter,
+				    _setter = _generateAttributeMet2.setter;
+
+				addProperty(options.controller, name, _getter, _setter);
+			}
+		});
+	}
+
+	return customElements.define(tag, function (_HTMLElement) {
+		inherits(_class, _HTMLElement);
+
+		function _class() {
+			classCallCheck(this, _class);
+			return possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
+		}
+
+		createClass(_class, [{
+			key: 'connectedCallback',
+			value: function connectedCallback() {
+				this.controller = new options.controller(this);
+			}
+		}, {
+			key: 'disconnectedCallback',
+			value: function disconnectedCallback() {
+				this.controller.destroy();
+			}
+		}]);
+		return _class;
+	}(HTMLElement));
+}
+
+/* global mocha */
+
+var generateDemoNode = function generateDemoNode(tag) {
+	var definition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	var node = document.createElement(tag);
+	var demo = { node: node };
+
+	var copy = void 0;
+
+	var controller = function (_definition$controlle) {
+		inherits(controller, _definition$controlle);
+
+		function controller(el) {
+			classCallCheck(this, controller);
+
+			var _this = possibleConstructorReturn(this, (controller.__proto__ || Object.getPrototypeOf(controller)).call(this, el));
+
+			demo.customElement = _this;
+
+			if (definition.controller) {
+				copy = new (function (_definition$controlle2) {
+					inherits(_class, _definition$controlle2);
+
+					function _class() {
+						classCallCheck(this, _class);
+						return possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
+					}
+
+					createClass(_class, [{
+						key: 'resolve',
+						value: function resolve() {
+							return Promise.reject();
+						}
+					}]);
+					return _class;
+				}(definition.controller))(el);
+			}
+			return _this;
+		}
+
+		createClass(controller, [{
+			key: 'destroy',
+			value: function destroy() {
+				demo.customElement = null;
+				copy = null;
+				copy.destroy.apply(this);
+				get(controller.prototype.__proto__ || Object.getPrototypeOf(controller.prototype), 'destroy', this).call(this);
+			}
+		}, {
+			key: 'init',
+			value: function init() {
+				copy.init.apply(this);
+				return this;
+			}
+		}, {
+			key: 'bind',
+			value: function bind() {
+				copy.bind.apply(this);
+				return this;
+			}
+		}, {
+			key: 'render',
+			value: function render() {
+				copy.render.apply(this);
+				mocha.run();
+				return this;
+			}
+		}, {
+			key: 'resolve',
+			value: function resolve() {
+				return Promise.all([get(controller.prototype.__proto__ || Object.getPrototypeOf(controller.prototype), 'resolve', this).call(this)]);
+			}
+		}]);
+		return controller;
+	}(definition.controller);
+
+	defineCustomElement(tag, {
+		attributes: definition.attributes || [],
+		controller: controller
+	});
+
+	return demo;
+};
+
+var _ref$1 = function testHelpersGenerator() {
+	var tests = {};
+
+	var sanitizeKey = function sanitizeKey(key) {
+		var prefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'test';
+
+		var validPrefix = typeof prefix === 'string' ? prefix : 'test';
+
+		var sanitized = key.toLowerCase().replace(/[^a-z]/gi, '-').replace(/-+/gi, '-').replace(/-$/, '').replace(/^-/, '');
+
+		return validPrefix + '-' + sanitized;
+	};
+
+	return {
+		defineTests: function defineTests(key, spec) {
+			if (tests[key]) {
+				console.warn('Test suite ' + key + ' already exists. Will override');
+			}
+
+			if (typeof spec === 'function') {
+				tests[key] = function runSpec() {
+					spec();
+				};
+			} else if ((typeof spec === 'undefined' ? 'undefined' : _typeof(spec)) === 'object') {
+				tests[key] = function runSpec() {
+					var env = { node: document.createElement('div') };
+
+					if (_typeof(spec.demo) === 'object') {
+						env = generateDemoNode(sanitizeKey(key), spec.demo);
+					}
+
+					if (typeof spec.before === 'function') {
+						spec.before(env);
+					}
+
+					if (typeof spec.run === 'function') {
+						spec.run(env);
+					}
+
+					if (typeof spec.after === 'function') {
+						spec.after();
+					}
+				};
+			}
+		},
+		runTests: function runTests(key) {
+			if (!tests[key]) {
+				console.warn('Test suite ' + key + ' does not exists');
+			}
+
+			tests[key]();
+		}
+	};
+}();
+var defineTests = _ref$1.defineTests;
+var runTests = _ref$1.runTests;
+
 function parse(name) {
 	var clean = name.trim();
 	var parts = clean.split(' ');
@@ -21929,20 +22245,18 @@ var BaseController = function () {
 
 			var init = function init() {
 				return promisify(function () {
-					console.log('this.init()');
 					_this.init();
 				});
 			};
+
 			var render = function render() {
 				return promisify(function () {
-					console.log('this.render()');
 					_this.render();
 				});
 			};
 
 			var bind = function bind() {
 				return promisify(function () {
-					console.log('this.bind()');
 					_this.bind();
 				});
 			};
@@ -22118,42 +22432,6 @@ var BaseController = function () {
 	}]);
 	return BaseController;
 }();
-
-var addMethod = function addMethod(customElement, name, method) {
-	if (typeof customElement.prototype[name] !== 'undefined') {
-		console.warn(customElement.name + ' already has a property ' + name);
-	}
-
-	customElement.prototype[name] = method;
-};
-
-var addGetter = function addGetter(customElement, name, method) {
-	if (typeof customElement.prototype[name] !== 'undefined') {
-		console.warn(customElement.name + ' already has a property ' + name);
-	}
-
-	Object.defineProperty(customElement.prototype, name, {
-		configurable: false,
-		get: method
-	});
-};
-
-var addProperty = function addProperty(customElement, name) {
-	var getter = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-	var setter = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-
-	if (typeof customElement.prototype[name] !== 'undefined') {
-		console.warn(customElement.name + ' already has a property ' + name);
-	}
-
-	var noop = function noop() {};
-
-	Object.defineProperty(customElement.prototype, name, {
-		configurable: false,
-		get: typeof getter === 'function' ? getter : noop,
-		set: typeof setter === 'function' ? setter : noop
-	});
-};
 
 var AttrMedia = function () {
 	function AttrMedia() {
@@ -22975,289 +23253,7 @@ function renderNodes(content, container) {
 	}(BaseController)
 };
 
-var noop = function noop() {};
-
-var generateStringAttributeMethods = function generateStringAttributeMethods(attribute) {
-	var getter = function getter() {
-		return this.el.getAttribute(attribute) || undefined;
-	};
-
-	var setter = function setter(to) {
-		if (to) {
-			this.el.setAttribute(attribute, to);
-		} else {
-			this.el.removeAttribute(attribute);
-		}
-	};
-
-	return { getter: getter, setter: setter };
-};
-
-var generateBoolAttributeMethods = function generateBoolAttributeMethods(attribute) {
-	var getter = function getter() {
-		return !!this.el.hasAttribute(attribute);
-	};
-
-	var setter = function setter(to) {
-		if (to) {
-			this.el.setAttribute(attribute, attribute);
-		} else {
-			this.el.removeAttribute(attribute);
-		}
-	};
-
-	return { getter: getter, setter: setter };
-};
-
-var generateIntegerAttributeMethods = function generateIntegerAttributeMethods(attribute) {
-	var getter = function getter() {
-		return parseInt(this.el.getAttribute(attribute), 10);
-	};
-
-	var setter = function setter(to) {
-		var parsed = parseInt(to, 10);
-
-		if (!Number.isNaN(parsed)) {
-			this.el.setAttribute(attribute, parsed);
-		} else {
-			console.warn('Could not set ' + attribute + ' to ' + to);
-			this.el.removeAttribute(attribute);
-		}
-	};
-
-	return { getter: getter, setter: setter };
-};
-
-var generateNumberAttributeMethods = function generateNumberAttributeMethods(attribute) {
-	var getter = function getter() {
-		return parseFloat(this.el.getAttribute(attribute));
-	};
-
-	var setter = function setter(to) {
-		var parsed = parseFloat(to);
-
-		if (!Number.isNaN(parsed)) {
-			this.el.setAttribute(attribute, parsed);
-		} else {
-			console.warn('Could not set ' + attribute + ' to ' + to);
-			this.el.removeAttribute(attribute);
-		}
-	};
-
-	return { getter: getter, setter: setter };
-};
-
-var generateAttributeMethods = function generateAttributeMethods(attribute) {
-	var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'string';
-
-	if (type === 'bool') {
-		return generateBoolAttributeMethods(attribute);
-	} else if (type === 'int' || type === 'integer') {
-		return generateIntegerAttributeMethods(attribute);
-	} else if (type === 'float' || type === 'number') {
-		return generateNumberAttributeMethods(attribute);
-	} else if (type === 'string') {
-		return generateStringAttributeMethods(attribute);
-	}
-	return { getter: noop, setter: noop };
-};
-
-function defineCustomElement(tag) {
-	var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-	// Attach all passed attributes to the passed controller
-	if (options.attributes && options.attributes.length) {
-		options.attributes.forEach(function (attribute) {
-			// String, sync with actual element attribute
-			if (typeof attribute === 'string') {
-				var _generateAttributeMet = generateAttributeMethods(attribute, 'string'),
-				    getter = _generateAttributeMet.getter,
-				    setter = _generateAttributeMet.setter;
-
-				addProperty(options.controller, attribute, getter, setter);
-			} else if (typeof attribute.attachTo === 'function') {
-				attribute.attachTo(options.controller);
-			} else if ((typeof attribute === 'undefined' ? 'undefined' : _typeof(attribute)) === 'object') {
-				var type = attribute.type || 'string';
-				var name = attribute.attribute;
-
-				var _generateAttributeMet2 = generateAttributeMethods(name, type),
-				    _getter = _generateAttributeMet2.getter,
-				    _setter = _generateAttributeMet2.setter;
-
-				addProperty(options.controller, name, _getter, _setter);
-			}
-		});
-	}
-
-	return customElements.define(tag, function (_HTMLElement) {
-		inherits(_class, _HTMLElement);
-
-		function _class() {
-			classCallCheck(this, _class);
-			return possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
-		}
-
-		createClass(_class, [{
-			key: 'connectedCallback',
-			value: function connectedCallback() {
-				this.controller = new options.controller(this);
-			}
-		}, {
-			key: 'disconnectedCallback',
-			value: function disconnectedCallback() {
-				this.controller.destroy();
-			}
-		}]);
-		return _class;
-	}(HTMLElement));
-}
-
 // Base Controller
-
-var _ref$1 = function () {
-	var tests = {};
-
-	var sanitizeKey = function sanitizeKey(key) {
-		var prefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'test';
-
-		if (!prefix) {
-			prefix = 'test';
-		}
-
-		var sanitized = key.toLowerCase().replace(/[^a-z]/gi, '-').replace(/\-+/gi, '-').replace(/\-$/, '').replace(/^-/, '');
-
-		return prefix + '-' + sanitized;
-	};
-
-	return {
-		defineTests: function defineTests(key, spec) {
-			if (tests[key]) {
-				console.warn('Test suite ' + key + ' already exists. Will override');
-			}
-
-			if (typeof spec === 'function') {
-				tests[key] = function () {
-					spec();
-				};
-			} else if ((typeof spec === 'undefined' ? 'undefined' : _typeof(spec)) === 'object') {
-				tests[key] = function () {
-					var env = { node: document.createElement('div') };
-
-					if (_typeof(spec.demo) === 'object') {
-						env = generateDemoNode(sanitizeKey(key), spec.demo);
-					}
-
-					if (typeof spec.before === 'function') {
-						spec.before(env);
-					}
-
-					if (typeof spec.run === 'function') {
-						spec.run(env);
-					}
-
-					if (typeof spec.after === 'function') {
-						spec.after();
-					}
-				};
-			}
-		},
-		runTests: function runTests(key) {
-			if (!tests[key]) {
-				console.warn('Test suite ' + key + ' does not exists');
-			}
-
-			tests[key]();
-		}
-	};
-}();
-var defineTests = _ref$1.defineTests;
-var runTests = _ref$1.runTests;
-
-var generateDemoNode = function generateDemoNode(tag) {
-	var definition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-	var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-
-	var node = document.createElement(tag);
-	var demo = { node: node };
-
-	var customElement = void 0;
-	var copy = void 0;
-
-	var controller = function (_definition$controlle) {
-		inherits(controller, _definition$controlle);
-
-		function controller(el) {
-			classCallCheck(this, controller);
-
-			var _this = possibleConstructorReturn(this, (controller.__proto__ || Object.getPrototypeOf(controller)).call(this, el));
-
-			demo.customElement = _this;
-
-			if (definition.controller) {
-				copy = new (function (_definition$controlle2) {
-					inherits(_class, _definition$controlle2);
-
-					function _class() {
-						classCallCheck(this, _class);
-						return possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
-					}
-
-					createClass(_class, [{
-						key: 'resolve',
-						value: function resolve() {
-							return Promise.reject();
-						}
-					}]);
-					return _class;
-				}(definition.controller))(el);
-			}
-			return _this;
-		}
-
-		createClass(controller, [{
-			key: 'destroy',
-			value: function destroy() {
-				customElement = null;
-				copy = null;
-				copy.destroy.apply(this);
-				get(controller.prototype.__proto__ || Object.getPrototypeOf(controller.prototype), 'destroy', this).call(this);
-			}
-		}, {
-			key: 'init',
-			value: function init() {
-				copy.init.apply(this);
-				return this;
-			}
-		}, {
-			key: 'bind',
-			value: function bind() {
-				copy.bind.apply(this);
-				return this;
-			}
-		}, {
-			key: 'render',
-			value: function render() {
-				copy.render.apply(this);
-				mocha.run();
-				return this;
-			}
-		}, {
-			key: 'resolve',
-			value: function resolve() {
-				return Promise.all([get(controller.prototype.__proto__ || Object.getPrototypeOf(controller.prototype), 'resolve', this).call(this)]);
-			}
-		}]);
-		return controller;
-	}(definition.controller);
-
-	defineCustomElement(tag, {
-		attributes: definition.attributes || [],
-		controller: controller
-	});
-
-	return demo;
-};
 
 // Setup
 defineTests('attributes/media', {
