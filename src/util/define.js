@@ -31,6 +31,14 @@ const registerAttribute = (function registerAttribute() {
 			const root = options.root || document.body;
 			const on = options.on || HTMLElement;
 
+			const nodeIsSupported = function (node) {
+				if (Array.isArray(on)) {
+					return on.some((supported) => node instanceof supported);
+				}
+
+				return node instanceof on;
+			};
+
 			const attach = function (node) {
 				const el = node;
 				el.controller = new options.controller(el);
@@ -50,7 +58,7 @@ const registerAttribute = (function registerAttribute() {
 
 			// Setup observers
 			handlers.push((mutation) => {
-				if (mutation.type === 'attributes' && mutation.target instanceof on) {
+				if (mutation.type === 'attributes' && nodeIsSupported(mutation.target)) {
 					// Attribute changed on supported DOM node type
 					const node = mutation.target;
 
@@ -63,7 +71,7 @@ const registerAttribute = (function registerAttribute() {
 					// Handle added nodes
 					if (mutation.addedNodes) {
 						Array.from(mutation.addedNodes, (node) => {
-							if (node instanceof on && node.hasAttribute(attribute)) {
+							if (nodeIsSupported(node) && node.hasAttribute(attribute)) {
 								return attach(node);
 							}
 
@@ -75,7 +83,7 @@ const registerAttribute = (function registerAttribute() {
 						Array.from(mutation.removedNodes, (node) => {
 							// Clean up if the DOM node gets removed before the
 							// attribute mutation has triggered
-							if (node instanceof on && node.hasAttribute(attribute)) {
+							if (nodeIsSupported(node) && node.hasAttribute(attribute)) {
 								return detach(node);
 							}
 
@@ -94,7 +102,7 @@ const registerAttribute = (function registerAttribute() {
 
 			// Look for current on DOM ready
 			Array.from(root.querySelectorAll(`[${attribute}]`), (el) => {
-				if (!(el instanceof on)) {
+				if (!nodeIsSupported(el)) {
 					console.warn('Custom attribute', attribute, 'added on non-supported element', on.name);
 					return false;
 				}
