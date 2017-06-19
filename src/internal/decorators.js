@@ -19,7 +19,7 @@ const addMethod = function (customElement, name, method) {
 const addGetter = function (customElement, name, method) {
 	const getterName = convertAttributeToPropertyName(name);
 
-	if (typeof customElement.prototype[name] !== 'undefined') {
+	if (typeof customElement.prototype[getterName] !== 'undefined') {
 		console.warn(`${customElement.name} already has a property ${getterName}`);
 	}
 
@@ -27,12 +27,14 @@ const addGetter = function (customElement, name, method) {
 		configurable: false,
 		get: method,
 	});
+
+	return getterName;
 };
 
 const addSetter = function (customElement, name, method) {
 	const setterName = convertAttributeToPropertyName(name);
 
-	if (typeof customElement.prototype[name] !== 'undefined') {
+	if (typeof customElement.prototype[setterName] !== 'undefined') {
 		console.warn(`${customElement.name} already has a property ${setterName}`);
 	}
 
@@ -40,12 +42,14 @@ const addSetter = function (customElement, name, method) {
 		configurable: false,
 		set: method,
 	});
+
+	return setterName;
 };
 
 const addProperty = function (customElement, name, getter = null, setter = null) {
 	const propertyName = convertAttributeToPropertyName(name);
 
-	if (typeof customElement.prototype[name] !== 'undefined') {
+	if (typeof customElement.prototype[propertyName] !== 'undefined') {
 		console.warn(`${customElement.name} already has a property ${propertyName}`);
 	}
 
@@ -57,7 +61,7 @@ const addProperty = function (customElement, name, getter = null, setter = null)
 		set: typeof setter === 'function' ? setter : noop,
 	};
 
-	const descriptor = Object.getOwnPropertyDescriptor(customElement.prototype, name);
+	const descriptor = Object.getOwnPropertyDescriptor(customElement.prototype, propertyName);
 
 	if (descriptor) {
 		if (typeof descriptor.set === 'function') {
@@ -89,7 +93,9 @@ const addProperty = function (customElement, name, getter = null, setter = null)
 		}
 	}
 
-	Object.defineProperty(customElement.prototype, name, property);
+	Object.defineProperty(customElement.prototype, propertyName, property);
+
+	return propertyName;
 };
 
 export {

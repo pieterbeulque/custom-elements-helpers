@@ -163,18 +163,16 @@ const addAttributesToController = function (controller, attributes = []) {
 		// String, sync with actual element attribute
 		if (typeof attribute === 'string') {
 			const { getter, setter } = generateAttributeMethods(attribute, 'string');
-
-			addProperty(controller, attribute, getter, setter);
-			return name;
+			const propertyName = addProperty(controller, attribute, getter, setter);
+			return propertyName;
 		}
 
 		if (typeof attribute === 'object') {
 			const type = attribute.type || 'string';
 			const name = attribute.attribute;
 			const { getter, setter } = generateAttributeMethods(name, type);
-
-			addProperty(controller, name, getter, setter);
-			return name;
+			const propertyName = addProperty(controller, name, getter, setter);
+			return propertyName;
 		}
 
 		if (typeof attribute.attachTo === 'function') {
