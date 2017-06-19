@@ -1,5 +1,6 @@
 import { parse as parseEvent, getPath } from '../util/events';
 import promisify from '../util/promise';
+import waitForDOMReady from '../util/dom-ready';
 
 export default class BaseController {
 
@@ -23,20 +24,7 @@ export default class BaseController {
 	}
 
 	resolve() {
-		return new Promise((resolve) => {
-			if (document.readyState === 'complete') {
-				resolve();
-			} else {
-				const handler = function () {
-					if (document.readyState === 'complete') {
-						document.removeEventListener('readystatechange', handler, false);
-						resolve();
-					}
-				};
-
-				document.addEventListener('readystatechange', handler, false);
-			}
-		});
+		return waitForDOMReady();
 	}
 
 	init() { }

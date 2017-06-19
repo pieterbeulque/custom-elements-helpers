@@ -1,34 +1,13 @@
 import { addProperty } from '../internal/decorators';
 import { generateAttributeMethods } from '../internal/attribute-methods-generator';
+import waitForDOMReady from './dom-ready';
 
 const CONTROLLER = Symbol('controller');
 
-export default function defineCustomElement(tag, options = {}) {
-	const observedAttributes = [];
+const registerElement = function (tag, options) {
+	const observedAttributes = options.observedAttributes || [];
 
-	// Attach all passed attributes to the passed controller
-	if (options.attributes && options.attributes.length) {
-		options.attributes.forEach((attribute) => {
-			// String, sync with actual element attribute
-			if (typeof attribute === 'string') {
-				const { getter, setter } = generateAttributeMethods(attribute, 'string');
-
-				addProperty(options.controller, attribute, getter, setter);
-				observedAttributes.push(attribute);
-			} else if (typeof attribute.attachTo === 'function') {
-				attribute.attachTo(options.controller);
-			} else if (typeof attribute === 'object') {
-				const type = attribute.type || 'string';
-				const name = attribute.attribute;
-				const { getter, setter } = generateAttributeMethods(name, type);
-
-				addProperty(options.controller, name, getter, setter);
-				observedAttributes.push(name);
-			}
-		});
-	}
-
-	return customElements.define(tag, class extends HTMLElement {
+	customElements.define(tag, class extends HTMLElement {
 
 		static get observedAttributes() {
 			return observedAttributes;
@@ -77,4 +56,174 @@ export default function defineCustomElement(tag, options = {}) {
 		}
 
 	});
+};
+
+const registerAttribute = (function registerAttribute() {
+	const handlers = [];
+
+	const observer = new MutationObserver((mutations) => {
+		Array.from(mutations, (mutation) => {
+			handlers.forEach((handler) => handler(mutation));
+			return mutation;
+		});
+	});
+
+	return function register(attribute, options = {}) {
+		waitForDOMReady().then(() => {
+			const extend = options.extends || HTMLElement;
+
+			const nodeIsSupported = function (node) {
+				if (Array.isArray(extend)) {
+					return extend.some((supported) => node instanceof supported);
+				}
+
+				return node instanceof extend;
+			};
+
+			const attach = function (node) {
+				const el = node;
+				el[CONTROLLER] = new options.controller(el);
+				return el;
+			};
+
+			const detach = function (node) {
+				const el = node;
+
+				if (el[CONTROLLER]) {
+					el[CONTROLLER].destroy();
+					el[CONTROLLER] = null;
+				}
+
+				return el;
+			};
+
+			// Setup observers
+			handlers.push((mutation) => {
+				if (mutation.type === 'attributes' && nodeIsSupported(mutation.target)) {
+					// Attribute changed on supported DOM node type
+					const node = mutation.target;
+
+					if (node.hasAttribute(attribute)) {
+						attach(node);
+					} else {
+						detach(node);
+					}
+				} else if (mutation.type === 'childList') {
+					// Handle added nodes
+					if (mutation.addedNodes) {
+						Array.from(mutation.addedNodes, (node) => {
+							if (nodeIsSupported(node) && node.hasAttribute(attribute)) {
+								return attach(node);
+							}
+
+							return null;
+						});
+					}
+
+					if (mutation.removedNodes) {
+						Array.from(mutation.removedNodes, (node) => {
+							// Clean up if the DOM node gets removed before the
+							// attribute mutation has triggered
+							if (nodeIsSupported(node) && node.hasAttribute(attribute)) {
+								return detach(node);
+							}
+
+							return null;
+						});
+					}
+				}
+			});
+
+			observer.observe(document.body, {
+				attributes: true,
+				subtree: true,
+				childList: true,
+				attributeFilter: [attribute],
+			});
+
+			// Look for current on DOM ready
+			Array.from(document.body.querySelectorAll(`[${attribute}]`), (el) => {
+				if (!nodeIsSupported(el)) {
+					console.warn('Custom attribute', attribute, 'added on non-supported element');
+					return false;
+				}
+
+				if (el[CONTROLLER]) {
+					return el;
+				}
+
+				return attach(el);
+			});
+		});
+	};
+}());
+
+const addAttributesToController = function (controller, attributes = []) {
+	return attributes.map((attribute) => {
+		// String, sync with actual element attribute
+		if (typeof attribute === 'string') {
+			const { getter, setter } = generateAttributeMethods(attribute, 'string');
+
+			addProperty(controller, attribute, getter, setter);
+			return name;
+		}
+
+		if (typeof attribute === 'object') {
+			const type = attribute.type || 'string';
+			const name = attribute.attribute;
+			const { getter, setter } = generateAttributeMethods(name, type);
+
+			addProperty(controller, name, getter, setter);
+			return name;
+		}
+
+		if (typeof attribute.attachTo === 'function') {
+			attribute.attachTo(controller);
+			return false;
+		}
+
+		return false;
+	}).filter((attribute) => !!attribute);
+};
+
+export default function defineCustomElement(tag, options = {}) {
+	// Validate tag
+	const isValidTag = tag.split('-').length > 1;
+
+	// Validate type
+	const type = ['element', 'attribute'].includes(options.type) ? options.type : 'element';
+
+	if (type === 'element' && !isValidTag) {
+		console.warn(tag, 'is not a valid Custom Element name. Register as an attribute instead.');
+		return false;
+	}
+
+	// Validate attributes
+	const attributes = Array.isArray(options.attributes) ? options.attributes : [];
+
+	// Validate controller
+	const controller = options.controller;
+
+	// Validate extends
+	const extend = options.extends;
+
+	if (type === 'element' && extend) {
+		console.warn('`extends` is not supported on element-registered Custom Elements. Register as an attribute instead.');
+		return false;
+	}
+
+	const observedAttributes = addAttributesToController(controller, attributes);
+
+	if (type === 'attributes' && observedAttributes.length > 0) {
+		console.warn('Observable attributes are not supported on attribute-registered Custom Elements. Register as an element instead.');
+		return false;
+	}
+
+	const validatedOptions = { type, extends: extend, attributes, controller, observedAttributes };
+
+	if (type === 'attribute') {
+		return registerAttribute(tag, validatedOptions);
+	}
+
+	return registerElement(tag, validatedOptions);
 }
