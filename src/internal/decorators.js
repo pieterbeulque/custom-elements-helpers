@@ -65,15 +65,10 @@ const addProperty = function (customElement, name, getter = null, setter = null)
 
 	if (descriptor) {
 		if (typeof descriptor.set === 'function') {
-			const generated = property.set;
 			const existing = descriptor.set;
 
 			property.set = function set(to) {
-				const sync = (parsed) => {
-					generated.call(this, parsed);
-				};
-
-				existing.call(this, { to, sync });
+				existing.call(this, to);
 			};
 		}
 
