@@ -22,6 +22,9 @@ export default {
 			if (this.elements.target) {
 				this.on('keyup', (e) => {
 					if (e.which === this.key) {
+						e.preventDefault();
+						e.stopPropagation();
+
 						this.elements.target.click();
 					}
 				}, document.body);

@@ -95,8 +95,10 @@ export default {
 					return;
 				}
 
-				e.preventDefault();
-				e.stopPropagation();
+				// Avoid cross-origin calls
+				if (!target.hostname || target.hostname !== window.location.hostname) {
+					return;
+				}
 
 				const href = target.getAttribute('href');
 
@@ -104,6 +106,9 @@ export default {
 					console.warn('Click on link without href');
 					return;
 				}
+
+				e.preventDefault();
+				e.stopPropagation();
 
 				this.goTo(href).catch((err) => {
 					console.warn('Could not navigate to', href);
