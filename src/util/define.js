@@ -28,6 +28,14 @@ const registerElement = function (tag, options) {
 			if (descriptor && descriptor.set) {
 				this[CONTROLLER][name] = newValue;
 			}
+
+			// If for argument `current` the method
+			// `currentChangedCallback` exists, trigger
+			const callback = this[CONTROLLER][`${name}ChangedCallback`];
+
+			if (typeof callback === 'function') {
+				callback.call(this[CONTROLLER], oldValue, newValue);
+			}
 		}
 
 		constructor() {
@@ -211,11 +219,6 @@ export default function defineCustomElement(tag, options = {}) {
 	}
 
 	const observedAttributes = addAttributesToController(controller, attributes);
-
-	if (type === 'attributes' && observedAttributes.length > 0) {
-		console.warn('Observable attributes are not supported on attribute-registered Custom Elements. Register as an element instead.');
-		return false;
-	}
 
 	const validatedOptions = { type, extends: extend, attributes, controller, observedAttributes };
 
