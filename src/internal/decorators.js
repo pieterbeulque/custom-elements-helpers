@@ -27,8 +27,6 @@ const addGetter = function (customElement, name, method) {
 		configurable: false,
 		get: method,
 	});
-
-	return getterName;
 };
 
 const addSetter = function (customElement, name, method) {
@@ -42,8 +40,6 @@ const addSetter = function (customElement, name, method) {
 		configurable: false,
 		set: method,
 	});
-
-	return setterName;
 };
 
 const addProperty = function (customElement, name, getter = null, setter = null) {
@@ -89,11 +85,10 @@ const addProperty = function (customElement, name, getter = null, setter = null)
 	}
 
 	Object.defineProperty(customElement.prototype, propertyName, property);
-
-	return propertyName;
 };
 
 export {
+	convertAttributeToPropertyName,
 	addMethod,
 	addGetter,
 	addSetter,

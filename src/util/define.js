@@ -1,4 +1,4 @@
-import { addProperty } from '../internal/decorators';
+import { convertAttributeToPropertyName, addProperty } from '../internal/decorators';
 import { generateAttributeMethods } from '../internal/attribute-methods-generator';
 import waitForDOMReady from './dom-ready';
 
@@ -13,7 +13,7 @@ const registerElement = function (tag, options) {
 			return observedAttributes;
 		}
 
-		attributeChangedCallback(name, oldValue, newValue) {
+		attributeChangedCallback(attribute, oldValue, newValue) {
 			if (oldValue === newValue) {
 				return;
 			}
@@ -22,16 +22,18 @@ const registerElement = function (tag, options) {
 				return;
 			}
 
+			const propertyName = convertAttributeToPropertyName(attribute);
+
 			const prototype = Object.getPrototypeOf(this[CONTROLLER]);
-			const descriptor = Object.getOwnPropertyDescriptor(prototype, name);
+			const descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
 
 			if (descriptor && descriptor.set) {
-				this[CONTROLLER][name] = newValue;
+				this[CONTROLLER][propertyName] = newValue;
 			}
 
 			// If for argument `current` the method
 			// `currentChangedCallback` exists, trigger
-			const callback = this[CONTROLLER][`${name}ChangedCallback`];
+			const callback = this[CONTROLLER][`${propertyName}ChangedCallback`];
 
 			if (typeof callback === 'function') {
 				callback.call(this[CONTROLLER], oldValue, newValue);
@@ -171,16 +173,16 @@ const addAttributesToController = function (controller, attributes = []) {
 		// String, sync with actual element attribute
 		if (typeof attribute === 'string') {
 			const { getter, setter } = generateAttributeMethods(attribute, 'string');
-			const propertyName = addProperty(controller, attribute, getter, setter);
-			return propertyName;
+			addProperty(controller, attribute, getter, setter);
+			return attribute;
 		}
 
 		if (typeof attribute === 'object') {
 			const type = attribute.type || 'string';
 			const name = attribute.attribute;
 			const { getter, setter } = generateAttributeMethods(name, type);
-			const propertyName = addProperty(controller, name, getter, setter);
-			return propertyName;
+			addProperty(controller, name, getter, setter);
+			return name;
 		}
 
 		if (typeof attribute.attachTo === 'function') {
