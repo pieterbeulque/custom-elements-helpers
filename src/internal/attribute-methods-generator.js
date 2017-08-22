@@ -6,8 +6,15 @@ const generateStringAttributeMethods = function (attribute) {
 	};
 
 	const setter = function (to) {
-		if (to) {
-			this.el.setAttribute(attribute, to);
+		const parsed = to && to.toString ? to.toString() : undefined;
+		const oldValue = this[attribute];
+
+		if (parsed === oldValue) {
+			return;
+		}
+
+		if (parsed) {
+			this.el.setAttribute(attribute, parsed);
 		} else {
 			this.el.removeAttribute(attribute);
 		}
@@ -22,8 +29,15 @@ const generateBoolAttributeMethods = function (attribute) {
 	};
 
 	const setter = function (to) {
-		if (to) {
-			this.el.setAttribute(attribute, attribute);
+		const parsed = typeof to === 'string' || !!to;
+		const oldValue = this[attribute];
+
+		if (parsed === oldValue) {
+			return;
+		}
+
+		if (parsed) {
+			this.el.setAttribute(attribute, '');
 		} else {
 			this.el.removeAttribute(attribute);
 		}
@@ -39,6 +53,11 @@ const generateIntegerAttributeMethods = function (attribute) {
 
 	const setter = function (to) {
 		const parsed = parseInt(to, 10);
+		const oldValue = this[attribute];
+
+		if (parsed === oldValue) {
+			return;
+		}
 
 		if (!Number.isNaN(parsed)) {
 			this.el.setAttribute(attribute, parsed);
@@ -58,6 +77,11 @@ const generateNumberAttributeMethods = function (attribute) {
 
 	const setter = function (to) {
 		const parsed = parseFloat(to);
+		const oldValue = this[attribute];
+
+		if (parsed === oldValue) {
+			return;
+		}
 
 		if (!Number.isNaN(parsed)) {
 			this.el.setAttribute(attribute, parsed);

@@ -1,16 +1,68 @@
-import { addProperty } from '../internal/decorators';
+import { convertAttributeToPropertyName, addProperty } from '../internal/decorators';
 import { generateAttributeMethods } from '../internal/attribute-methods-generator';
 import waitForDOMReady from './dom-ready';
 
+const CONTROLLER = Symbol('controller');
+
 const registerElement = function (tag, options) {
+	const observedAttributes = options.observedAttributes || [];
+
 	customElements.define(tag, class extends HTMLElement {
 
+		static get observedAttributes() {
+			return observedAttributes;
+		}
+
+		attributeChangedCallback(attribute, oldValue, newValue) {
+			if (oldValue === newValue) {
+				return;
+			}
+
+			if (!this[CONTROLLER]) {
+				return;
+			}
+
+			const propertyName = convertAttributeToPropertyName(attribute);
+
+			const prototype = Object.getPrototypeOf(this[CONTROLLER]);
+			const descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
+
+			if (descriptor && descriptor.set) {
+				this[CONTROLLER][propertyName] = newValue;
+			}
+
+			// If for argument `current` the method
+			// `currentChangedCallback` exists, trigger
+			const callback = this[CONTROLLER][`${propertyName}ChangedCallback`];
+
+			if (typeof callback === 'function') {
+				callback.call(this[CONTROLLER], oldValue, newValue);
+			}
+		}
+
+		constructor() {
+			super();
+
+			observedAttributes.forEach((attribute) => {
+				if (typeof this[attribute] !== 'undefined') {
+					console.warn(`Requested syncing on attribute '${attribute}' that already has defined behavior`);
+				}
+
+				Object.defineProperty(this, attribute, {
+					configurable: false,
+					enumerable: false,
+					get: () => this[CONTROLLER][attribute],
+					set: (to) => { this[CONTROLLER][attribute] = to; },
+				});
+			});
+		}
+
 		connectedCallback() {
-			this.controller = new options.controller(this);
+			this[CONTROLLER] = new options.controller(this);
 		}
 
 		disconnectedCallback() {
-			this.controller.destroy();
+			this[CONTROLLER].destroy();
 		}
 
 	});
@@ -28,29 +80,28 @@ const registerAttribute = (function registerAttribute() {
 
 	return function register(attribute, options = {}) {
 		waitForDOMReady().then(() => {
-			const root = options.root || document.body;
-			const on = options.on || HTMLElement;
+			const extend = options.extends || HTMLElement;
 
 			const nodeIsSupported = function (node) {
-				if (Array.isArray(on)) {
-					return on.some((supported) => node instanceof supported);
+				if (Array.isArray(extend)) {
+					return extend.some((supported) => node instanceof supported);
 				}
 
-				return node instanceof on;
+				return node instanceof extend;
 			};
 
 			const attach = function (node) {
 				const el = node;
-				el.controller = new options.controller(el);
+				el[CONTROLLER] = new options.controller(el);
 				return el;
 			};
 
 			const detach = function (node) {
 				const el = node;
 
-				if (el.controller) {
-					el.controller.destroy();
-					el.controller = null;
+				if (el[CONTROLLER]) {
+					el[CONTROLLER].destroy();
+					el[CONTROLLER] = null;
 				}
 
 				return el;
@@ -93,7 +144,7 @@ const registerAttribute = (function registerAttribute() {
 				}
 			});
 
-			observer.observe(root, {
+			observer.observe(document.body, {
 				attributes: true,
 				subtree: true,
 				childList: true,
@@ -101,13 +152,13 @@ const registerAttribute = (function registerAttribute() {
 			});
 
 			// Look for current on DOM ready
-			Array.from(root.querySelectorAll(`[${attribute}]`), (el) => {
+			Array.from(document.body.querySelectorAll(`[${attribute}]`), (el) => {
 				if (!nodeIsSupported(el)) {
-					console.warn('Custom attribute', attribute, 'added on non-supported element', on.name);
+					console.warn('Custom attribute', attribute, 'added on non-supported element');
 					return false;
 				}
 
-				if (el.controller) {
+				if (el[CONTROLLER]) {
 					return el;
 				}
 
@@ -117,43 +168,65 @@ const registerAttribute = (function registerAttribute() {
 	};
 }());
 
-const addAttributeToController = function (controller, attribute) {
-	// String, sync with actual element attribute
-	if (typeof attribute === 'string') {
-		const { getter, setter } = generateAttributeMethods(attribute, 'string');
-		addProperty(controller, attribute, getter, setter);
-	} else if (typeof attribute.attachTo === 'function') {
-		attribute.attachTo(controller);
-	} else if (typeof attribute === 'object') {
-		const type = attribute.type || 'string';
-		const name = attribute.attribute;
+const addAttributesToController = function (controller, attributes = []) {
+	return attributes.map((attribute) => {
+		// String, sync with actual element attribute
+		if (typeof attribute === 'string') {
+			const { getter, setter } = generateAttributeMethods(attribute, 'string');
+			addProperty(controller, attribute, getter, setter);
+			return attribute;
+		}
 
-		const { getter, setter } = generateAttributeMethods(name, type);
+		if (typeof attribute === 'object') {
+			const type = attribute.type || 'string';
+			const name = attribute.attribute;
+			const { getter, setter } = generateAttributeMethods(name, type);
+			addProperty(controller, name, getter, setter);
+			return name;
+		}
 
-		addProperty(controller, name, getter, setter);
-	}
+		if (typeof attribute.attachTo === 'function') {
+			attribute.attachTo(controller);
+			return false;
+		}
+
+		return false;
+	}).filter((attribute) => !!attribute);
 };
 
 export default function defineCustomElement(tag, options = {}) {
 	// Validate tag
-	const validated = tag.split('-').length > 1;
-	let type = options.type || 'element';
+	const isValidTag = tag.split('-').length > 1;
 
-	if (!validated && type === 'element') {
-		console.warn(tag, 'is not a valid Custom Element name, registering as attribute');
-		type = 'attribute';
+	// Validate type
+	const type = ['element', 'attribute'].includes(options.type) ? options.type : 'element';
+
+	if (type === 'element' && !isValidTag) {
+		console.warn(tag, 'is not a valid Custom Element name. Register as an attribute instead.');
+		return false;
 	}
 
-	// Attach all passed attributes to the passed controller
-	if (options.attributes && options.attributes.length) {
-		options.attributes.forEach((attribute) => {
-			addAttributeToController(options.controller, attribute);
-		});
+	// Validate attributes
+	const attributes = Array.isArray(options.attributes) ? options.attributes : [];
+
+	// Validate controller
+	const controller = options.controller;
+
+	// Validate extends
+	const extend = options.extends;
+
+	if (type === 'element' && extend) {
+		console.warn('`extends` is not supported on element-registered Custom Elements. Register as an attribute instead.');
+		return false;
 	}
+
+	const observedAttributes = addAttributesToController(controller, attributes);
+
+	const validatedOptions = { type, extends: extend, attributes, controller, observedAttributes };
 
 	if (type === 'attribute') {
-		return registerAttribute(tag, options);
+		return registerAttribute(tag, validatedOptions);
 	}
 
-	return registerElement(tag, options);
+	return registerElement(tag, validatedOptions);
 }

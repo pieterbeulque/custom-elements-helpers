@@ -19,7 +19,7 @@ const addMethod = function (customElement, name, method) {
 const addGetter = function (customElement, name, method) {
 	const getterName = convertAttributeToPropertyName(name);
 
-	if (typeof customElement.prototype[name] !== 'undefined') {
+	if (typeof customElement.prototype[getterName] !== 'undefined') {
 		console.warn(`${customElement.name} already has a property ${getterName}`);
 	}
 
@@ -32,7 +32,7 @@ const addGetter = function (customElement, name, method) {
 const addSetter = function (customElement, name, method) {
 	const setterName = convertAttributeToPropertyName(name);
 
-	if (typeof customElement.prototype[name] !== 'undefined') {
+	if (typeof customElement.prototype[setterName] !== 'undefined') {
 		console.warn(`${customElement.name} already has a property ${setterName}`);
 	}
 
@@ -45,20 +45,50 @@ const addSetter = function (customElement, name, method) {
 const addProperty = function (customElement, name, getter = null, setter = null) {
 	const propertyName = convertAttributeToPropertyName(name);
 
-	if (typeof customElement.prototype[name] !== 'undefined') {
+	if (typeof customElement.prototype[propertyName] !== 'undefined') {
 		console.warn(`${customElement.name} already has a property ${propertyName}`);
 	}
 
 	const noop = function () {};
 
-	Object.defineProperty(customElement.prototype, propertyName, {
+	const property = {
 		configurable: false,
 		get: typeof getter === 'function' ? getter : noop,
 		set: typeof setter === 'function' ? setter : noop,
-	});
+	};
+
+	const descriptor = Object.getOwnPropertyDescriptor(customElement.prototype, propertyName);
+
+	if (descriptor) {
+		if (typeof descriptor.set === 'function') {
+			const existing = descriptor.set;
+
+			property.set = function set(to) {
+				existing.call(this, to);
+			};
+		}
+
+		if (typeof descriptor.get === 'function') {
+			const generated = property.get;
+			const existing = descriptor.get;
+
+			property.get = function get() {
+				const value = existing.call(this);
+
+				if (typeof value !== 'undefined') {
+					return value;
+				}
+
+				return generated.call(this);
+			};
+		}
+	}
+
+	Object.defineProperty(customElement.prototype, propertyName, property);
 };
 
 export {
+	convertAttributeToPropertyName,
 	addMethod,
 	addGetter,
 	addSetter,
