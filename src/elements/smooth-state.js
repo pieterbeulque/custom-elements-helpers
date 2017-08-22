@@ -135,7 +135,7 @@ export default {
 				transition.path = Object.assign(this.latestPathEntry);
 
 				return this.onBefore(transition).then(() => {
-					fetch(href).then((res) => res.text()).then((html) => {
+					fetch(href, { credentials: 'include' }).then((res) => res.text()).then((html) => {
 						const { title, content } = parseHTML(html, 'mr-smooth-state');
 
 						window.dispatchEvent(new CustomEvent('smoothState:start'));

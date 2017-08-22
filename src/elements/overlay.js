@@ -62,7 +62,7 @@ export default {
 			if (upLink) {
 				const href = upLink.getAttribute('href');
 
-				fetch(href).then((res) => res.text()).then((html) => {
+				fetch(href, { credentials: 'include' }).then((res) => res.text()).then((html) => {
 					const { title, content } = parseHTML(html);
 
 					if (content) {
@@ -229,7 +229,7 @@ export default {
 				document.title = title;
 			};
 
-			return fetch(href).then((res) => res.text()).then((html) => {
+			return fetch(href, { credentials: 'include' }).then((res) => res.text()).then((html) => {
 				const { title, content, meta } = parseHTML(html, this.el.tagName);
 
 				updateMetaTags(meta);
