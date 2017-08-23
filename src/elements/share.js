@@ -157,11 +157,16 @@ export default {
 
 			const params = {
 				u: values.url || this.url,
-				picture: values.image,
 				title: values.title || this.title,
 				caption: values.site_name,
 				description: values.description || this.description,
 			};
+
+			const isAbsoluteUrl = /^(https?:)?\/\//i;
+
+			if (isAbsoluteUrl.test(values.image)) {
+				params.picture = values.image;
+			}
 
 			openWindow('https://www.facebook.com/sharer.php', params, { name: 'Share on Facebook', width: 560, height: 630 });
 		}
