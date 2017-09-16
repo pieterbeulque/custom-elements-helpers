@@ -1,10 +1,9 @@
 import BaseController from '../controllers/base';
 import { parseHTML, renderNodes } from '../util/html';
 
-export default {
+const smoothState = {
 	attributes: [],
 	controller: class extends BaseController {
-
 		get path() {
 			return this._path || [];
 		}
@@ -189,6 +188,7 @@ export default {
 		onAfter(transition) {
 			return Promise.resolve(transition);
 		}
-
 	},
 };
+
+export default smoothState;

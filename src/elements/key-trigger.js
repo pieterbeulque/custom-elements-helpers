@@ -1,11 +1,10 @@
 import BaseController from '../controllers/base';
 
-export default {
+const keyTrigger = {
 	attributes: [
 		{ attribute: 'key', type: 'int' },
 	],
 	controller: class extends BaseController {
-
 		init() {
 			this.elements = this.elements || {};
 
@@ -32,6 +31,7 @@ export default {
 
 			return this;
 		}
-
 	},
 };
+
+export default keyTrigger;

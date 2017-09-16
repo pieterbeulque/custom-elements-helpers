@@ -1,7 +1,6 @@
 import { addMethod, addGetter } from '../internal/decorators';
 
 export default class AttrMedia {
-
 	static attachTo(customElement) {
 		const noop = function () {};
 
@@ -85,5 +84,4 @@ export default class AttrMedia {
 			}
 		});
 	}
-
 }

@@ -8,7 +8,6 @@ const registerElement = function (tag, options) {
 	const observedAttributes = options.observedAttributes || [];
 
 	customElements.define(tag, class extends HTMLElement {
-
 		static get observedAttributes() {
 			return observedAttributes;
 		}
@@ -64,7 +63,6 @@ const registerElement = function (tag, options) {
 		disconnectedCallback() {
 			this[CONTROLLER].destroy();
 		}
-
 	});
 };
 

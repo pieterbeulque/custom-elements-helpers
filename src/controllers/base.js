@@ -3,7 +3,6 @@ import promisify from '../util/promise';
 import waitForDOMReady from '../util/dom-ready';
 
 export default class BaseController {
-
 	constructor(el) {
 		this.el = el;
 
@@ -131,5 +130,4 @@ export default class BaseController {
 
 		this.el.dispatchEvent(event);
 	}
-
 }

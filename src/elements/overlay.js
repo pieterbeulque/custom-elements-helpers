@@ -6,10 +6,9 @@ import {
 	cleanNodes,
 } from '../util/html';
 
-export default {
+const overlay = {
 	attributes: [],
 	controller: class extends BaseController {
-
 		/**
 		 * `isShown` is a boolean that tracks
 		 * if the overlay is currently open or not
@@ -263,3 +262,5 @@ export default {
 		}
 	},
 };
+
+export default overlay;

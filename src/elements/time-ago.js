@@ -1,11 +1,10 @@
 import BaseController from '../controllers/base';
 
-export default {
+const timeAgo = {
 	attributes: [
 		'datetime',
 	],
 	controller: class extends BaseController {
-
 		resolve() {
 			// No need to wait for window.onload
 			return Promise.resolve(true);
@@ -93,6 +92,7 @@ export default {
 
 			return this;
 		}
-
 	},
 };
+
+export default timeAgo;

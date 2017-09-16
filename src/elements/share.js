@@ -73,10 +73,9 @@ const openWindow = function (href, params = {}, options = {}) {
 	}
 };
 
-export default {
+const share = {
 	attributes: [],
 	controller: class extends BaseController {
-
 		get title() {
 			const attribute = this.el.getAttribute('mr-share-title');
 			const fallback = document.title;
@@ -204,6 +203,7 @@ export default {
 
 			openWindow('mailto:', params, { invisible: true });
 		}
-
 	},
 };
+
+export default share;

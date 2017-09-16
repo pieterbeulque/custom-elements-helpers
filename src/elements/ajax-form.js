@@ -12,12 +12,11 @@ const convertFormDataToQuerystring = function (values) {
 	}).join('&');
 };
 
-export default {
+const ajaxForm = {
 	attributes: [
 		{ attribute: 'jsonp', type: 'bool' },
 	],
 	controller: class extends BaseController {
-
 		get action() {
 			return this.elements.form.action;
 		}
@@ -156,6 +155,7 @@ export default {
 				this.elements.errorMessage.removeAttribute('hidden');
 			}
 		}
-
 	},
 };
+
+export default ajaxForm;

@@ -2,7 +2,6 @@ import { addMethod, addGetter } from '../internal/decorators';
 import { getPath } from '../util/events';
 
 export default class AttrTouchHover {
-
 	static attachTo(customElement) {
 		let isTouch = false;
 		let isTouched = false;
@@ -68,5 +67,4 @@ export default class AttrTouchHover {
 			}, this.el, { useCapture: true });
 		});
 	}
-
 }
