@@ -48,7 +48,6 @@ export default class BaseController {
 
 	destroy() {
 		this.el.classList.remove('is-resolved');
-		return this.unbind();
 	}
 
 	resolve() {
