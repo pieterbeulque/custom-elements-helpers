@@ -1,21 +1,10 @@
 import { parse as parseEvent, getPath } from '../util/events';
 import promisify from '../util/promise';
 import waitForDOMReady from '../util/dom-ready';
+import elementIsInDOM from '../util/element-is-in-dom';
 
 export default class BaseController {
 	constructor(el) {
-		const elementIsInDOM = function (element, root = document.body) {
-			if (!element) {
-				return false;
-			}
-
-			if (element === root) {
-				return false;
-			}
-
-			return root.contains(element);
-		};
-
 		const noop = () => {};
 
 		this.el = el;
