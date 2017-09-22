@@ -61,7 +61,15 @@ const registerElement = function (tag, options) {
 		}
 
 		disconnectedCallback() {
-			this[CONTROLLER].destroy();
+			if (typeof this[CONTROLLER].unbind === 'function') {
+				this[CONTROLLER].unbind();
+			}
+
+			if (typeof this[CONTROLLER].destroy === 'function') {
+				this[CONTROLLER].destroy();
+			}
+
+			this[CONTROLLER] = null;
 		}
 	});
 };
