@@ -3,6 +3,8 @@ import promisify from '../util/promise';
 import waitForDOMReady from '../util/dom-ready';
 import elementIsInDOM from '../util/element-is-in-dom';
 
+const BASE_CONTROLLER_HANDLERS = Symbol('BASE_CONTROLLER_HANDLERS');
+
 export default class BaseController {
 	constructor(el) {
 		const noop = () => {};
@@ -60,17 +62,17 @@ export default class BaseController {
 	bind() { }
 
 	unbind() {
-		if (this._handlers) {
-			this._handlers.forEach((listener) => {
+		if (this[BASE_CONTROLLER_HANDLERS]) {
+			this[BASE_CONTROLLER_HANDLERS].forEach((listener) => {
 				listener.target.removeEventListener(listener.event, listener.handler, listener.options);
 			});
-		}
 
-		return this;
+			this[BASE_CONTROLLER_HANDLERS] = [];
+		}
 	}
 
 	on(name, handler, target = null, options = false) {
-		this._handlers = this._handlers || [];
+		this[BASE_CONTROLLER_HANDLERS] = this[BASE_CONTROLLER_HANDLERS] || [];
 
 		const { event, selector } = parseEvent(name);
 		const parsedTarget = !target ? this.el : target;
@@ -101,7 +103,7 @@ export default class BaseController {
 
 		listener.target.addEventListener(listener.event, listener.handler, listener.options);
 
-		this._handlers.push(listener);
+		this[BASE_CONTROLLER_HANDLERS].push(listener);
 
 		return this;
 	}
@@ -119,7 +121,7 @@ export default class BaseController {
 		const { event, selector } = parseEvent(name);
 		const parsedTarget = !target ? this.el : target;
 
-		const listener = this._handlers.find((handler) => {
+		const listener = this[BASE_CONTROLLER_HANDLERS].find((handler) => {
 			// Selectors don't match
 			if (handler.selector !== selector) {
 				return false;
@@ -140,7 +142,7 @@ export default class BaseController {
 		});
 
 		if (!!listener && !!listener.target) {
-			this._handlers.splice(this._handlers.indexOf(listener), 1);
+			this[BASE_CONTROLLER_HANDLERS].splice(this[BASE_CONTROLLER_HANDLERS].indexOf(listener), 1);
 
 			listener.target.removeEventListener(listener.event, listener.handler, listener.options);
 		}
