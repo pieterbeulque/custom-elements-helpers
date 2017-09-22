@@ -2,24 +2,33 @@ import { parse as parseEvent, getPath } from '../util/events';
 import promisify from '../util/promise';
 import waitForDOMReady from '../util/dom-ready';
 
-const ELEMENT_IS_IN_DOM = Symbol('ELEMENT_IS_IN_DOM');
-
 export default class BaseController {
 	constructor(el) {
-		this[ELEMENT_IS_IN_DOM] = true;
-		this.el = el;
+		const elementIsInDOM = function (element, root = document.body) {
+			if (!element) {
+				return false;
+			}
+
+			if (element === root) {
+				return false;
+			}
+
+			return root.contains(element);
+		};
 
 		const noop = () => {};
 
+		this.el = el;
+
 		this.resolve().then(() => {
-			if (!this[ELEMENT_IS_IN_DOM]) {
+			if (elementIsInDOM(this.el)) {
 				return Promise.reject('The element has disappeared');
 			}
 
 			this.el.classList.add('is-resolved');
 
 			const init = () => promisify(() => {
-				if (!this[ELEMENT_IS_IN_DOM]) {
+				if (elementIsInDOM(this.el)) {
 					return Promise.reject('The element has disappeared');
 				}
 
@@ -27,7 +36,7 @@ export default class BaseController {
 			});
 
 			const render = () => promisify(() => {
-				if (!this[ELEMENT_IS_IN_DOM]) {
+				if (elementIsInDOM(this.el)) {
 					return Promise.reject('The element has disappeared');
 				}
 
@@ -35,7 +44,7 @@ export default class BaseController {
 			});
 
 			const bind = () => promisify(() => {
-				if (!this[ELEMENT_IS_IN_DOM]) {
+				if (elementIsInDOM(this.el)) {
 					return Promise.reject('The element has disappeared');
 				}
 
@@ -48,7 +57,6 @@ export default class BaseController {
 
 	destroy() {
 		this.el.classList.remove('is-resolved');
-		this[ELEMENT_IS_IN_DOM] = false;
 		return this.unbind();
 	}
 
