@@ -10,14 +10,14 @@ export default class BaseController {
 		this.el = el;
 
 		this.resolve().then(() => {
-			if (elementIsInDOM(this.el)) {
+			if (!elementIsInDOM(this.el)) {
 				return Promise.reject('The element has disappeared');
 			}
 
 			this.el.classList.add('is-resolved');
 
 			const init = () => promisify(() => {
-				if (elementIsInDOM(this.el)) {
+				if (!elementIsInDOM(this.el)) {
 					return Promise.reject('The element has disappeared');
 				}
 
@@ -25,7 +25,7 @@ export default class BaseController {
 			});
 
 			const render = () => promisify(() => {
-				if (elementIsInDOM(this.el)) {
+				if (!elementIsInDOM(this.el)) {
 					return Promise.reject('The element has disappeared');
 				}
 
@@ -33,7 +33,7 @@ export default class BaseController {
 			});
 
 			const bind = () => promisify(() => {
-				if (elementIsInDOM(this.el)) {
+				if (!elementIsInDOM(this.el)) {
 					return Promise.reject('The element has disappeared');
 				}
 
