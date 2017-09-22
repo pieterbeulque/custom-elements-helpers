@@ -2,23 +2,53 @@ import { parse as parseEvent, getPath } from '../util/events';
 import promisify from '../util/promise';
 import waitForDOMReady from '../util/dom-ready';
 
+const ELEMENT_IS_IN_DOM = Symbol('ELEMENT_IS_IN_DOM');
+
 export default class BaseController {
 	constructor(el) {
+		this[ELEMENT_IS_IN_DOM] = true;
 		this.el = el;
 
+		const noop = () => {};
+
 		this.resolve().then(() => {
+			if (!this[ELEMENT_IS_IN_DOM]) {
+				return Promise.reject('The element has disappeared');
+			}
+
 			this.el.classList.add('is-resolved');
 
-			const init = () => promisify(() => this.init());
-			const render = () => promisify(() => this.render());
-			const bind = () => promisify(() => this.bind());
+			const init = () => promisify(() => {
+				if (!this[ELEMENT_IS_IN_DOM]) {
+					return Promise.reject('The element has disappeared');
+				}
 
-			return init().then(() => render().then(() => bind().then(() => this)));
-		});
+				return this.init();
+			});
+
+			const render = () => promisify(() => {
+				if (!this[ELEMENT_IS_IN_DOM]) {
+					return Promise.reject('The element has disappeared');
+				}
+
+				return this.render();
+			});
+
+			const bind = () => promisify(() => {
+				if (!this[ELEMENT_IS_IN_DOM]) {
+					return Promise.reject('The element has disappeared');
+				}
+
+				return this.bind();
+			});
+
+			return init().then(() => render().then(() => bind().then(() => this))).catch(noop);
+		}).catch(noop);
 	}
 
 	destroy() {
 		this.el.classList.remove('is-resolved');
+		this[ELEMENT_IS_IN_DOM] = false;
 		return this.unbind();
 	}
 
