@@ -12,12 +12,12 @@
     "lint": "eslint --fix src/**/*.js"
   },
   "devDependencies": {
-    "babel-preset-es2015-rollup": "^3.0.0",
-    "eslint": "^4.7.0",
-    "eslint-config-mrhenry": "^1.0.0",
-    "eslint-plugin-import": "^2.7.0",
-    "rollup": "^0.49.3",
     "babel-core": "^6.26.0",
+    "babel-preset-es2015-rollup": "^3.0.0",
+    "eslint": "^4.10.0",
+    "eslint-config-mrhenry": "^1.0.0",
+    "eslint-plugin-import": "^2.8.0",
+    "rollup": "^0.51.1",
     "rollup-plugin-babel": "^3.0.2"
   }
 }
