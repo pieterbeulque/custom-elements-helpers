@@ -94,6 +94,42 @@ const generateNumberAttributeMethods = function (attribute) {
 	return { getter, setter };
 };
 
+const generateJSONAttributeMethods = function (attribute) {
+	const getter = function () {
+		const value = this.el.getAttribute(attribute);
+
+		try {
+			const decoded = JSON.parse(value);
+
+			if (decoded) {
+				return decoded;
+			}
+		} catch (e) {
+			console.warn(`Invalid value passed as ${attribute}`);
+			return null;
+		}
+
+		return null;
+	};
+
+	const setter = function (to) {
+		const encoded = JSON.stringify(to);
+		const oldValue = this.el.getAttribute(attribute);
+
+		if (encoded === oldValue) {
+			return;
+		}
+
+		if (encoded) {
+			this.el.setAttribute(attribute, encoded);
+		} else {
+			this.el.removeAttribute(attribute);
+		}
+	};
+
+	return { getter, setter };
+};
+
 const generateAttributeMethods = function (attribute, type = 'string') {
 	if (type === 'bool') {
 		return generateBoolAttributeMethods(attribute);
@@ -103,7 +139,10 @@ const generateAttributeMethods = function (attribute, type = 'string') {
 		return generateNumberAttributeMethods(attribute);
 	} else if (type === 'string') {
 		return generateStringAttributeMethods(attribute);
+	} else if (type === 'json') {
+		return generateJSONAttributeMethods(attribute);
 	}
+
 	return { getter: noop, setter: noop };
 };
 
