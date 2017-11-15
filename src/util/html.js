@@ -50,28 +50,28 @@ export function renderNodes(content, container) {
 		container.removeChild(container.firstChild);
 	}
 
+	Array.from(content.getElementsByTagName('img'), (img) => {
+		const clone = document.createElement('img');
+		clone.src = img.src;
+		clone.sizes = img.sizes;
+		clone.srcset = img.srcset;
+		clone.className = img.className;
+
+		if (img.getAttribute('width')) {
+			clone.width = img.width;
+		}
+
+		if (img.getAttribute('height')) {
+			clone.height = img.height;
+		}
+
+		img.parentNode.replaceChild(clone, img);
+
+		return clone;
+	});
+
 	for (let i = content.children.length - 1; i >= 0; i -= 1) {
 		const child = content.children[i];
-
-		Array.from(content.getElementsByTagName('img'), (img) => {
-			const clone = document.createElement('img');
-			clone.src = img.src;
-			clone.sizes = img.sizes;
-			clone.srcset = img.srcset;
-			clone.className = img.className;
-
-			if (img.getAttribute('width')) {
-				clone.width = img.width;
-			}
-
-			if (img.getAttribute('height')) {
-				clone.height = img.height;
-			}
-
-			img.parentNode.replaceChild(clone, img);
-
-			return clone;
-		});
 
 		if (container.firstChild) {
 			container.insertBefore(child, container.firstChild);
