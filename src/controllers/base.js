@@ -117,6 +117,8 @@ export default class BaseController {
 	}
 
 	off(name, target = null) {
+		this[BASE_CONTROLLER_HANDLERS] = this[BASE_CONTROLLER_HANDLERS] || [];
+
 		const { event, selector } = parseEvent(name);
 		const parsedTarget = !target ? this.el : target;
 
