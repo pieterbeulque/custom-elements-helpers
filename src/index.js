@@ -18,3 +18,4 @@ export { default as defineCustomElement } from './util/define';
 export { parse as parseEvent, getPath as getEventPath } from './util/events';
 export { parseHTML, renderNodes, cleanNodes } from './util/html';
 export { default as promisify } from './util/promise';
+export { default as Template } from './util/template';
