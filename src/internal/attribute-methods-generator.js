@@ -131,7 +131,7 @@ const generateJSONAttributeMethods = function (attribute) {
 };
 
 const generateAttributeMethods = function (attribute, type = 'string') {
-	if (type === 'bool') {
+	if (type === 'bool' || type === 'boolean') {
 		return generateBoolAttributeMethods(attribute);
 	} else if (type === 'int' || type === 'integer') {
 		return generateIntegerAttributeMethods(attribute);
