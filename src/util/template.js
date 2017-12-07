@@ -14,7 +14,13 @@ export default class Template {
 					if (typeof value === 'string') {
 						part.textContent = value;
 					} else if (typeof value === 'object' && !Array.isArray(value)) {
-						Object.assign(part, value);
+						Object.entries(value).forEach(([attribute, v]) => {
+							if (typeof v === 'object' && !Array.isArray(value)) {
+								Object.assign(part[attribute], v);
+							} else {
+								Object.assign(part, { [attribute]: v });
+							}
+						}, {});
 					}
 				}
 			} catch (e) {
