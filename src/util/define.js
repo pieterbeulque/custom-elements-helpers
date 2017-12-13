@@ -192,7 +192,12 @@ const addAttributesToController = function (controller, attributes = []) {
 		}
 
 		if (typeof attribute.attachTo === 'function') {
-			attribute.attachTo(controller);
+			const name = attribute.attachTo(controller);
+
+			if (name) {
+				return name;
+			}
+
 			return false;
 		}
 
