@@ -95,25 +95,35 @@ const generateNumberAttributeMethods = function (attribute) {
 };
 
 const generateJSONAttributeMethods = function (attribute) {
+	// @param value  Whatever you want to parse
+	// @param strict If true, return null when non-JSON parsed
+	//               If false, return whatever was passed to parse
+	const parse = function (value, strict = false) {
+		if (typeof value === 'string') {
+			try {
+				const decoded = JSON.parse(value);
+
+				if (decoded) {
+					return decoded;
+				}
+			} catch (e) {
+				return (strict) ? null : value;
+			}
+
+			return (strict) ? null : value;
+		}
+
+		return (strict) ? null : value;
+	};
+
 	const getter = function () {
 		const value = this.el.getAttribute(attribute);
 
-		try {
-			const decoded = JSON.parse(value);
-
-			if (decoded) {
-				return decoded;
-			}
-		} catch (e) {
-			console.warn(`Invalid value passed as ${attribute}`);
-			return null;
-		}
-
-		return null;
+		return parse(value, true);
 	};
 
 	const setter = function (to) {
-		const encoded = JSON.stringify(to);
+		const encoded = JSON.stringify(parse(to));
 		const oldValue = this.el.getAttribute(attribute);
 
 		if (encoded === oldValue) {
