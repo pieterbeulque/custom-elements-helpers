@@ -7,11 +7,13 @@ const BASE_CONTROLLER_HANDLERS = Symbol('BASE_CONTROLLER_HANDLERS');
 
 export default class BaseController {
 	constructor(el) {
-		const noop = () => {};
+		let bubbleErrors = false;
 
 		this.el = el;
 
 		this.resolve().then(() => {
+			bubbleErrors = true;
+
 			if (!elementIsInDOM(this.el)) {
 				return Promise.reject('The element has disappeared');
 			}
@@ -42,8 +44,12 @@ export default class BaseController {
 				return this.bind();
 			});
 
-			return init().then(() => render().then(() => bind().then(() => this))).catch(noop);
-		}).catch(noop);
+			return init().then(() => render().then(() => bind().then(() => this)));
+		}).catch((error) => {
+			if (bubbleErrors) {
+				throw new Error(error);
+			}
+		});
 	}
 
 	destroy() {
