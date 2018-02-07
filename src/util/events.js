@@ -14,16 +14,16 @@ export function parse(name) {
 }
 
 export function getPath(e) {
-	let path = e.path;
+	if (e.path) {
+		return e.path;
+	}
 
-	if (!path) {
-		path = [e.target];
-		let node = e.target;
+	const path = [e.target];
+	let node = e.target;
 
-		while (node.parentNode) {
-			node = node.parentNode;
-			path.push(node);
-		}
+	while (node.parentNode) {
+		node = node.parentNode;
+		path.push(node);
 	}
 
 	return path;

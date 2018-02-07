@@ -35,9 +35,9 @@ const ajaxForm = {
 
 		init() {
 			this.elements = this.elements || {};
-			this.elements.form = this.el.getElementsByTagName('form')[0];
-			this.elements.successMessage = this.el.getElementsByClassName('js-ajax-form-success')[0];
-			this.elements.errorMessage = this.el.getElementsByClassName('js-ajax-form-error')[0];
+			this.elements.form = this.el.getElementsByTagName('form').item(0);
+			this.elements.successMessage = this.el.getElementsByClassName('js-ajax-form-success').item(0);
+			this.elements.errorMessage = this.el.getElementsByClassName('js-ajax-form-error').item(0);
 
 			if (!this.elements.form) {
 				console.warn('Activated MrAjaxForm without a form');

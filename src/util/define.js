@@ -221,10 +221,7 @@ export default function defineCustomElement(tag, options = {}) {
 	const attributes = Array.isArray(options.attributes) ? options.attributes : [];
 
 	// Validate controller
-	const controller = options.controller;
-
-	// Validate extends
-	const extend = options.extends;
+	const { controller, extends: extend } = options;
 
 	if (type === 'element' && extend) {
 		console.warn('`extends` is not supported on element-registered Custom Elements. Register as an attribute instead.');
@@ -233,7 +230,9 @@ export default function defineCustomElement(tag, options = {}) {
 
 	const observedAttributes = addAttributesToController(controller, attributes);
 
-	const validatedOptions = { type, extends: extend, attributes, controller, observedAttributes };
+	const validatedOptions = {
+		type, extends: extend, attributes, controller, observedAttributes,
+	};
 
 	if (type === 'attribute') {
 		return registerAttribute(tag, validatedOptions);

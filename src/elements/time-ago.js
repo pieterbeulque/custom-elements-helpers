@@ -46,7 +46,7 @@ const timeAgo = {
 				const now = new Date();
 				let calculated;
 
-				if (!isNaN(time)) {
+				if (!Number.isNaN(time)) {
 					const diff = Math.floor((now.getTime() - time));
 
 					calculated = {};

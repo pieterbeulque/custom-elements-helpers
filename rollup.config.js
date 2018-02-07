@@ -8,7 +8,16 @@ export default {
 	},
 	plugins: [
 		babel({
-			presets: ['es2015-rollup'],
+			plugins: ['external-helpers'],
+			presets: [
+				['env', {
+					modules: false,
+					browsers: [
+						'last 2 versions',
+						'> 0.5% in BE',
+					],
+				}],
+			],
 		}),
 	],
 };

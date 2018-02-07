@@ -9,10 +9,8 @@ const smoothState = {
 		}
 
 		get latestPathEntry() {
-			const length = this.path.length;
-
-			if (length > 0) {
-				return this.path[length - 1];
+			if (this.path.length > 0) {
+				return this.path[this.path.length - 1];
 			}
 
 			return undefined;
@@ -71,10 +69,7 @@ const smoothState = {
 		}
 
 		init() {
-			const href = window.location.href;
-			const title = document.title;
-
-			this.replaceState(href, title);
+			this.replaceState(window.location.href, document.title);
 
 			return this;
 		}

@@ -111,10 +111,10 @@ const share = {
 		init() {
 			this.elements = {};
 
-			this.elements.facebook = this.el.getElementsByClassName('js-share-facebook')[0];
-			this.elements.twitter = this.el.getElementsByClassName('js-share-twitter')[0];
-			this.elements.pinterest = this.el.getElementsByClassName('js-share-pinterest')[0];
-			this.elements.mail = this.el.getElementsByClassName('js-share-mail')[0];
+			this.elements.facebook = this.el.getElementsByClassName('js-share-facebook').item(0);
+			this.elements.twitter = this.el.getElementsByClassName('js-share-twitter').item(0);
+			this.elements.pinterest = this.el.getElementsByClassName('js-share-pinterest').item(0);
+			this.elements.mail = this.el.getElementsByClassName('js-share-mail').item(0);
 
 			return this;
 		}

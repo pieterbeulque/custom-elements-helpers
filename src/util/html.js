@@ -24,14 +24,11 @@ export const parseHTML = (function parseHTML() {
 	return function parse(html, selector = null) {
 		const parsed = parser.parseFromString(html, 'text/html');
 
-		// Get document title
-		const title = parsed.title;
-
-		// Get document nodes
-		let content = parsed.body;
+		const { title, head } = parsed;
+		let { body: content } = parsed;
 
 		if (selector) {
-			content = parsed.body.querySelector(selector);
+			content = content.querySelector(selector);
 
 			if (!content) {
 				throw new Error('not-found');
@@ -39,7 +36,7 @@ export const parseHTML = (function parseHTML() {
 		}
 
 		// Get document meta
-		const meta = Array.from(parsed.head.querySelectorAll('meta'), (tag) => parseMetaTag(tag)).filter((t) => !!t);
+		const meta = Array.from(head.querySelectorAll('meta'), (tag) => parseMetaTag(tag)).filter((t) => !!t);
 
 		return { title, content, meta };
 	};

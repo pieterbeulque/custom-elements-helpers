@@ -65,9 +65,9 @@ const overlay = {
 					const { title, content } = parseHTML(html);
 
 					if (content) {
-						if (content.getElementsByTagName(this.el.tagName)[0]) {
-							const classList = content.getElementsByTagName(this.el.tagName)[0].classList;
-							this.originalClasses = Array.from(classList);
+						if (content.getElementsByTagName(this.el.tagName).item(0)) {
+							const original = content.getElementsByTagName(this.el.tagName).item(0);
+							this.originalClasses = Array.from(original.classList);
 						}
 
 						const fragment = document.createDocumentFragment();
@@ -105,17 +105,14 @@ const overlay = {
 				// Currently not inside an overlay view, but an overlay might open
 				// (because an empty <mr-overlay> is present)
 				// so we store the current state to support `popstate` events
-				const title = document.title;
-				const href = window.location.href;
-
 				this.upState = {
-					href,
-					title,
+					href: window.location.href,
+					title: document.title,
 					root: true,
 					by: this.el.tagName,
 				};
 
-				window.history.replaceState(this.upState, title, href);
+				window.history.replaceState(this.upState, this.upState.title, this.upState.href);
 			}
 
 			return this;
@@ -144,11 +141,9 @@ const overlay = {
 			}, this.el);
 
 			this.on('click .js-overlay-show', (e, target) => {
-				const href = target.href;
-
-				if (href) {
+				if (target.href) {
 					e.preventDefault();
-					this.show(href);
+					this.show(target.href);
 				}
 			}, document.body);
 
