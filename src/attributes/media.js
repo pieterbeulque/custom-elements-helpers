@@ -50,7 +50,7 @@ export default class AttrMedia {
 		addMethod(customElement, 'whenMediaUnmatches', function whenMediaUnmatches() {
 			const defer = new Promise((resolve) => {
 				const handler = function (media) {
-					if (media.matches) {
+					if (!media.matches) {
 						resolve();
 						media.removeListener(handler);
 					}
