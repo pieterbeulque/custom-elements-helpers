@@ -123,6 +123,11 @@ const generateJSONAttributeMethods = function (attribute) {
 	};
 
 	const setter = function (to) {
+		if (!to) {
+			this.el.removeAttribute(attribute);
+			return;
+		}
+
 		const encoded = JSON.stringify(parse(to));
 		const oldValue = this.el.getAttribute(attribute);
 
