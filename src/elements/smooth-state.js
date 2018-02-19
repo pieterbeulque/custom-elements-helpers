@@ -84,11 +84,7 @@ const smoothState = {
 				}
 			}, window);
 
-			this.on('click a', (e, target) => {
-				if (target.classList && target.classList.contains('js-mr-smooth-state-disable')) {
-					return;
-				}
-
+			this.on('click a:not(.js-mr-smooth-state-disable):not([href^="http"]):not([href^="#"])', (e, target) => {
 				// Avoid cross-origin calls
 				if (!target.hostname || target.hostname !== window.location.hostname) {
 					return;
