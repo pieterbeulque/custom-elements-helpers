@@ -47,20 +47,16 @@ export function renderNodes(content, container) {
 		container.removeChild(container.firstChild);
 	}
 
-	Array.from(content.getElementsByTagName('img'), (img) => {
+	const images = Array.from(content.getElementsByTagName('img'));
+
+	images.forEach((img) => {
 		const clone = document.createElement('img');
-		clone.src = img.src;
-		clone.sizes = img.sizes;
-		clone.srcset = img.srcset;
-		clone.className = img.className;
 
-		if (img.getAttribute('width')) {
-			clone.width = img.width;
-		}
+		const attributes = Array.from(img.attributes);
 
-		if (img.getAttribute('height')) {
-			clone.height = img.height;
-		}
+		attributes.forEach((attribute) => {
+			clone.setAttributeNode(attribute.cloneNode(true));
+		});
 
 		img.parentNode.replaceChild(clone, img);
 
