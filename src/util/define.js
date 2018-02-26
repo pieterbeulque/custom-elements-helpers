@@ -77,8 +77,10 @@ const registerElement = function (tag, options) {
 const registerAttribute = (function registerAttribute() {
 	const handlers = [];
 
-	const observer = new MutationObserver((mutations) => {
-		Array.from(mutations, (mutation) => {
+	const observer = new MutationObserver((records) => {
+		const mutations = Array.from(records);
+
+		mutations.forEach((mutation) => {
 			handlers.forEach((handler) => handler(mutation));
 			return mutation;
 		});
@@ -127,24 +129,44 @@ const registerAttribute = (function registerAttribute() {
 				} else if (mutation.type === 'childList') {
 					// Handle added nodes
 					if (mutation.addedNodes) {
-						Array.from(mutation.addedNodes, (node) => {
+						const addedNodes = Array.from(mutation.addedNodes);
+
+						addedNodes.forEach((node) => {
 							if (nodeIsSupported(node) && node.hasAttribute(attribute)) {
-								return attach(node);
+								attach(node);
 							}
 
-							return null;
+							if (node.hasChildNodes()) {
+								const nested = Array.from(node.querySelectorAll(`[${attribute}]`)).filter((nestedNode) => nodeIsSupported(nestedNode));
+
+								if (nested && nested.length > 0) {
+									nested.forEach((nestedNode) => {
+										attach(nestedNode);
+									});
+								}
+							}
 						});
 					}
 
 					if (mutation.removedNodes) {
-						Array.from(mutation.removedNodes, (node) => {
+						const removedNodes = Array.from(mutation.removedNodes);
+
+						removedNodes.forEach((node) => {
 							// Clean up if the DOM node gets removed before the
 							// attribute mutation has triggered
 							if (nodeIsSupported(node) && node.hasAttribute(attribute)) {
-								return detach(node);
+								detach(node);
 							}
 
-							return null;
+							if (node.hasChildNodes()) {
+								const nested = Array.from(node.querySelectorAll(`[${attribute}]`)).filter((nestedNode) => nodeIsSupported(nestedNode));
+
+								if (nested && nested.length > 0) {
+									nested.forEach((nestedNode) => {
+										detach(nestedNode);
+									});
+								}
+							}
 						});
 					}
 				}
