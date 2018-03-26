@@ -115,6 +115,7 @@ const share = {
 			this.elements.twitter = this.el.getElementsByClassName('js-share-twitter').item(0);
 			this.elements.pinterest = this.el.getElementsByClassName('js-share-pinterest').item(0);
 			this.elements.mail = this.el.getElementsByClassName('js-share-mail').item(0);
+			this.elements.linkedin = this.el.getElementsByClassName('js-share-linkedin').item(0);
 
 			return this;
 		}
@@ -146,6 +147,13 @@ const share = {
 					e.stopPropagation();
 					this.shareViaMail();
 				}, this.elements.mail);
+			}
+
+			if (this.elements.linkedin) {
+				this.on('click', (e) => {
+					e.stopPropagation();
+					this.shareOnLinkedin();
+				}, this.elements.linkedin);
 			}
 
 			return this;
@@ -202,6 +210,20 @@ const share = {
 			};
 
 			openWindow('mailto:', params, { invisible: true });
+		}
+
+		shareOnLinkedin() {
+			const values = getMetaValues(document.head, '[property^="og:"]');
+
+			const params = {
+				url: values.url || this.url,
+				mini: true,
+				title: values.title || this.title,
+				summary: values.description || this.description,
+				source: values.url || this.url,
+			};
+
+			openWindow('https://www.linkedin.com/shareArticle', params, { name: 'Share on Linkedin', width: 740, height: 475 });
 		}
 	},
 };
