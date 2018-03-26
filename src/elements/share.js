@@ -152,7 +152,7 @@ const share = {
 			if (this.elements.linkedin) {
 				this.on('click', (e) => {
 					e.stopPropagation();
-					this.shareOnLinkedin();
+					this.shareOnLinkedIn();
 				}, this.elements.linkedin);
 			}
 
@@ -212,7 +212,7 @@ const share = {
 			openWindow('mailto:', params, { invisible: true });
 		}
 
-		shareOnLinkedin() {
+		shareOnLinkedIn() {
 			const values = getMetaValues(document.head, '[property^="og:"]');
 
 			const params = {
@@ -223,7 +223,7 @@ const share = {
 				source: values.url || this.url,
 			};
 
-			openWindow('https://www.linkedin.com/shareArticle', params, { name: 'Share on Linkedin', width: 740, height: 475 });
+			openWindow('https://www.linkedin.com/shareArticle', params, { name: 'Share on LinkedIn', width: 740, height: 475 });
 		}
 	},
 };
