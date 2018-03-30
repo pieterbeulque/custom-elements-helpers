@@ -47,7 +47,7 @@ export function renderNodes(content, container) {
 		container.removeChild(container.firstChild);
 	}
 
-	const images = Array.from(content.getElementsByTagName('img'));
+	const images = Array.from(content.querySelectorAll('img'));
 
 	images.forEach((img) => {
 		const clone = document.createElement('img');
@@ -63,13 +63,17 @@ export function renderNodes(content, container) {
 		return clone;
 	});
 
-	for (let i = content.children.length - 1; i >= 0; i -= 1) {
-		const child = content.children[i];
+	if (content instanceof DocumentFragment) {
+		container.appendChild(content);
+	} else {
+		for (let i = content.children.length - 1; i >= 0; i -= 1) {
+			const child = content.children[i];
 
-		if (container.firstChild) {
-			container.insertBefore(child, container.firstChild);
-		} else {
-			container.appendChild(child);
+			if (container.firstChild) {
+				container.insertBefore(child, container.firstChild);
+			} else {
+				container.appendChild(child);
+			}
 		}
 	}
 }
