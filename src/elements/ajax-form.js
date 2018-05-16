@@ -101,6 +101,7 @@ const ajaxForm = {
 					headers: new Headers({
 						'Content-Type': 'application/x-www-form-urlencoded',
 					}),
+					body: this.values,
 				};
 
 				return { url, params };
