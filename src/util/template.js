@@ -4,6 +4,16 @@ export default class Template {
 	}
 
 	render(values = {}) {
+		if (!this.template.content) {
+			this.template.content = document.createDocumentFragment();
+
+			const childNodes = Array.from(this.template.childNodes);
+
+			childNodes.forEach((childNode) => {
+				this.template.content.appendChild(childNode);
+			});
+		}
+
 		const fragment = this.template.content.cloneNode(true);
 
 		Object.entries(values).forEach(([selector, value]) => {
