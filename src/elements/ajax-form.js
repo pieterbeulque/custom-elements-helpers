@@ -124,7 +124,7 @@ const ajaxForm = {
 			}
 
 			return fetch(url, params).then((res) => {
-				if (res.status && res.status === 200) {
+				if (res.ok) {
 					return res;
 				}
 
