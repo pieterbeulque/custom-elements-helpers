@@ -1,24 +1,17 @@
 import BaseController from '../controllers/base';
 import fetchJSONP from '../util/fetch';
 
-const convertFormDataToQuerystring = function (values) {
-	return Array.from(values, ([key, raw]) => {
-		if (raw) {
-			const value = window.encodeURIComponent(raw);
-			return `${key}=${value}`;
-		}
-
-		return '';
-	}).join('&');
-};
-
 const ajaxForm = {
 	attributes: [
 		{ attribute: 'jsonp', type: 'bool' },
 	],
 	controller: class extends BaseController {
 		get action() {
-			return this.elements.form.action;
+			try {
+				return new URL(this.elements.form.action);
+			} catch (e) {
+				return new URL(this.elements.form.action, window.location.origin);
+			}
 		}
 
 		get method() {
@@ -82,8 +75,12 @@ const ajaxForm = {
 
 		prepare(method) {
 			const get = () => {
-				const querystring = convertFormDataToQuerystring(this.values);
-				const url = `${this.action}?${querystring}`;
+				const url = new URL(this.action);
+
+				Array.from(this.values.entries()).forEach(([key, value]) => {
+					url.searchParams.append(key, value);
+				});
+
 				const params = {
 					method: 'GET',
 					headers: new Headers({
@@ -95,7 +92,8 @@ const ajaxForm = {
 			};
 
 			const post = () => {
-				const url = this.action;
+				const url = new URL(this.action);
+
 				const params = {
 					method: 'POST',
 					headers: new Headers({
