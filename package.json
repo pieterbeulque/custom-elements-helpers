@@ -1,11 +1,11 @@
 {
-  "name": "custom-elements-helpers",
+  "name": "@pieterbeulque/custom-elements-helpers",
   "version": "2.5.3",
   "description": "A collection of Custom Elements v1 helpers",
   "main": "lib/index.js",
   "module": "src/index.js",
-  "repository": "https://github.com/mrhenry/custom-elements-helpers",
-  "author": "@mrhenry",
+  "repository": "https://github.com/pieterbeulque/custom-elements-helpers",
+  "author": "@pieterbeulque",
   "license": "MIT",
   "scripts": {
     "build": "rollup -c",
