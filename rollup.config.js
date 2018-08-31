@@ -8,14 +8,10 @@ export default {
 	},
 	plugins: [
 		babel({
-			plugins: ['external-helpers'],
 			presets: [
-				['env', {
+				['@babel/preset-env', {
 					modules: false,
-					browsers: [
-						'last 2 versions',
-						'> 0.5% in BE',
-					],
+					targets: 'last 2 versions, > 0.5% in BE, not dead',
 				}],
 			],
 		}),
