@@ -9,15 +9,15 @@
   "license": "MIT",
   "scripts": {
     "build": "rollup -c",
-    "lint": "eslint --fix src/**/*.js"
+    "lint": "eslint --fix src/**/*.js; exit 0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-env": "^1.6.1",
-    "eslint": "^4.17.0",
-    "eslint-config-mrhenry": "^2.0.0",
-    "eslint-plugin-import": "^2.8.0",
+    "eslint": "^5.4.0",
+    "@gentsagency/eslint-config": "^2.1.0",
+    "eslint-plugin-import": "^2.14.0",
     "rollup": "^0.55.3",
     "rollup-plugin-babel": "^3.0.3"
   }

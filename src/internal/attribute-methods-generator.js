@@ -152,13 +152,13 @@ const generateJSONAttributeMethods = function (attribute) {
 const generateAttributeMethods = function (attribute, type = 'string') {
 	if (type === 'bool' || type === 'boolean') {
 		return generateBoolAttributeMethods(attribute);
-	} else if (type === 'int' || type === 'integer') {
+	} if (type === 'int' || type === 'integer') {
 		return generateIntegerAttributeMethods(attribute);
-	} else if (type === 'float' || type === 'number') {
+	} if (type === 'float' || type === 'number') {
 		return generateNumberAttributeMethods(attribute);
-	} else if (type === 'string') {
+	} if (type === 'string') {
 		return generateStringAttributeMethods(attribute);
-	} else if (type === 'json') {
+	} if (type === 'json') {
 		return generateJSONAttributeMethods(attribute);
 	}
 

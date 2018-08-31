@@ -63,19 +63,19 @@ const timeAgo = {
 					if (calculated.months > 12) {
 						const years = this.getCountedNoun('year', calculated.years);
 						return `${calculated.years} ${years} ${this.translations.ago}`;
-					} else if (calculated.weeks > 7) {
+					} if (calculated.weeks > 7) {
 						const months = this.getCountedNoun('month', calculated.months);
 						return `${calculated.months} ${months} ${this.translations.ago}`;
-					} else if (calculated.days > 21) {
+					} if (calculated.days > 21) {
 						const weeks = this.getCountedNoun('week', calculated.weeks);
 						return `${calculated.weeks} ${weeks} ${this.translations.ago}`;
-					} else if (calculated.hours > 24) {
+					} if (calculated.hours > 24) {
 						const days = this.getCountedNoun('day', calculated.days);
 						return `${calculated.days} ${days} ${this.translations.ago}`;
-					} else if (calculated.minutes > 60) {
+					} if (calculated.minutes > 60) {
 						const hours = this.getCountedNoun('hour', calculated.hours);
 						return `${calculated.hours} ${hours} ${this.translations.ago}`;
-					} else if (calculated.seconds > 60) {
+					} if (calculated.seconds > 60) {
 						const minutes = this.getCountedNoun('minute', calculated.minutes);
 						return `${calculated.minutes} ${minutes} ${this.translations.ago}`;
 					}

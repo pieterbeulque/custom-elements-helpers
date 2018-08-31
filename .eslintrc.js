@@ -1,5 +1,5 @@
 module.exports = {
-    "extends": "mrhenry",
+    "extends": "@gentsagency/eslint-config",
     "parserOptions": {
         "ecmaVersion": 6,
         "sourceType": "module"
