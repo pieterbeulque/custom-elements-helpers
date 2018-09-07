@@ -124,7 +124,13 @@ const registerAttribute = (function registerAttribute() {
 				} else if (mutation.type === 'childList') {
 					// Handle added nodes
 					if (mutation.addedNodes) {
-						const addedNodes = Array.from(mutation.addedNodes);
+						const addedNodes = Array.from(mutation.addedNodes, (node) => {
+							if (node.nodeType === Node.ELEMENT_NODE) {
+								return node;
+							}
+
+							return undefined;
+						}).filter((node) => node);
 
 						addedNodes.forEach((node) => {
 							if (nodeIsSupported(node) && node.hasAttribute(attribute)) {
@@ -144,7 +150,13 @@ const registerAttribute = (function registerAttribute() {
 					}
 
 					if (mutation.removedNodes) {
-						const removedNodes = Array.from(mutation.removedNodes);
+						const removedNodes = Array.from(mutation.removedNodes, (node) => {
+							if (node.nodeType === Node.ELEMENT_NODE) {
+								return node;
+							}
+
+							return undefined;
+						}).filter((node) => node);
 
 						removedNodes.forEach((node) => {
 							// Clean up if the DOM node gets removed before the
