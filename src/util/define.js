@@ -245,6 +245,11 @@ export default function defineCustomElement(tag, options = {}) {
 		throw new Error(`${tag} is not a valid Custom Element name.`);
 	}
 
+	if (type === 'attribute') {
+		// eslint-disable-next-line no-console
+		console.warn('Using { type: attribute } since v2.6.0. Try extending a native element instead using is="".');
+	}
+
 	// Validate attributes
 	const attributes = Array.isArray(options.attributes) ? options.attributes : [];
 
