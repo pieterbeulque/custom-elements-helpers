@@ -380,4 +380,11 @@ The meta key holds an array of `{ name, property, content }` meta tags. This mat
 
 ## Polyfill
 
-The `custom-elements.js` polyfill from [Polymer / webcomponents.org](https://github.com/webcomponents/webcomponentsjs) is included too. At the moment, it's best to copy paste it from the repo into your public folder. [Suggestions on how to improve this are welcome](https://github.com/mrhenry/custom-elements-helpers/issues/4).
+To polyfill, we recommend the [`document-register-element`](https://github.com/WebReflection/document-register-element) polyfill. To keep polyfill usage opt-in, it's not required as a dependency.
+
+It's as simple as:
+
+```js
+import installCustomElements from 'document-register-element';
+installCustomElements(window);
+```
