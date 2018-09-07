@@ -7,7 +7,7 @@ const CONTROLLER = Symbol('controller');
 const registerElement = function (tag, options) {
 	const observedAttributes = options.observedAttributes || [];
 
-	customElements.define(tag, class extends HTMLElement {
+	customElements.define(tag, class extends options.extends.class {
 		static get observedAttributes() {
 			return observedAttributes;
 		}
@@ -71,7 +71,7 @@ const registerElement = function (tag, options) {
 
 			this[CONTROLLER] = null;
 		}
-	});
+	}, options.extends.tag ? { extends: options.extends.tag } : undefined);
 };
 
 const registerAttribute = (function registerAttribute() {
@@ -86,16 +86,11 @@ const registerAttribute = (function registerAttribute() {
 		});
 	});
 
+
 	return function register(attribute, options = {}) {
 		waitForDOMReady().then(() => {
-			const extend = options.extends || HTMLElement;
-
 			const nodeIsSupported = function (node) {
-				if (Array.isArray(extend)) {
-					return extend.some((supported) => node instanceof supported);
-				}
-
-				return node instanceof extend;
+				return node instanceof options.extends.class;
 			};
 
 			const attach = function (node) {
@@ -242,18 +237,40 @@ export default function defineCustomElement(tag, options = {}) {
 	// Validate attributes
 	const attributes = Array.isArray(options.attributes) ? options.attributes : [];
 
-	// Validate controller
-	const { controller, extends: extend } = options;
+	// Validate extend
+	const extend = (() => {
+		const fallback = { class: HTMLElement, tag: undefined };
 
-	if (type === 'element' && extend) {
-		console.warn('`extends` is not supported on element-registered Custom Elements. Register as an attribute instead.');
-		return false;
-	}
+		if (!options.extends) {
+			return fallback;
+		}
 
-	const observedAttributes = addAttributesToController(controller, attributes);
+		// Support the old, non-object syntax for options.extend
+		if (options.extends.prototype instanceof HTMLElement) {
+			return { class: options.extends, tag: undefined };
+		}
+
+		// The new syntax needs { class: HTMLButtonElement, tag: 'button' }
+		if (!options.extends.class || !options.extends.tag) {
+			return { class: HTMLElement, tag: undefined };
+		}
+
+		const parent = options.extends.class;
+
+		return {
+			class: parent.prototype instanceof HTMLElement ? parent : HTMLElement,
+			tag: typeof options.extends.tag === 'string' ? options.extends.tag : undefined,
+		};
+	})();
+
+	const observedAttributes = addAttributesToController(options.controller, attributes);
 
 	const validatedOptions = {
-		type, extends: extend, attributes, controller, observedAttributes,
+		type,
+		extends: extend,
+		attributes,
+		controller: options.controller,
+		observedAttributes,
 	};
 
 	if (type === 'attribute') {
