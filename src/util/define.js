@@ -242,8 +242,7 @@ export default function defineCustomElement(tag, options = {}) {
 	const type = ['element', 'attribute'].includes(options.type) ? options.type : 'element';
 
 	if (type === 'element' && !isValidTag) {
-		console.warn(tag, 'is not a valid Custom Element name. Register as an attribute instead.');
-		return false;
+		throw new Error(`${tag} is not a valid Custom Element name.`);
 	}
 
 	// Validate attributes
