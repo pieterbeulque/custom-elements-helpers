@@ -7,10 +7,18 @@ const ajaxForm = {
 	],
 	controller: class extends BaseController {
 		get action() {
+			const action = (() => {
+				if (this.elements.form.hasAttribute('action')) {
+					return this.elements.form.getAttribute('action');
+				}
+
+				return window.location.href;
+			})();
+
 			try {
-				return new URL(this.elements.form.action);
+				return new URL(action);
 			} catch (e) {
-				return new URL(this.elements.form.action, window.location.origin);
+				return new URL(action, window.location.origin);
 			}
 		}
 
@@ -74,6 +82,12 @@ const ajaxForm = {
 		}
 
 		prepare(method) {
+			const defaultParams = {
+				mode: 'same-origin',
+				credentials: 'same-origin',
+				redirect: 'follow',
+			};
+
 			const get = () => {
 				const url = new URL(this.action);
 
@@ -81,12 +95,12 @@ const ajaxForm = {
 					url.searchParams.append(key, value);
 				});
 
-				const params = {
+				const params = Object.assign({}, defaultParams, {
 					method: 'GET',
 					headers: new Headers({
 						'Content-Type': 'application/json',
 					}),
-				};
+				});
 
 				return { url, params };
 			};
@@ -94,13 +108,10 @@ const ajaxForm = {
 			const post = () => {
 				const url = new URL(this.action);
 
-				const params = {
+				const params = Object.assign({}, defaultParams, {
 					method: 'POST',
-					headers: new Headers({
-						'Content-Type': 'application/x-www-form-urlencoded',
-					}),
 					body: this.values,
-				};
+				});
 
 				return { url, params };
 			};
