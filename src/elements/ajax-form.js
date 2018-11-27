@@ -66,11 +66,11 @@ const ajaxForm = {
 			};
 
 			this.on('submit', (e) => {
+				e.preventDefault();
+
 				if (this.isProcessing) {
 					return;
 				}
-
-				e.preventDefault();
 
 				this.isProcessing = true;
 
