@@ -66,7 +66,13 @@ const ajaxForm = {
 			};
 
 			this.on('submit', (e) => {
+				if (this.isProcessing) {
+					return;
+				}
+
 				e.preventDefault();
+
+				this.isProcessing = true;
 
 				reset();
 
@@ -74,8 +80,10 @@ const ajaxForm = {
 
 				this.submit(url, params)
 					.then((data) => {
+						this.isProcessing = false;
 						this.onSuccess(data);
 					}, (err) => {
+						this.isProcessing = false;
 						this.onError(err);
 					});
 			}, this.elements.form);
