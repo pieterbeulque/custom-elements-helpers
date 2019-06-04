@@ -1,6 +1,6 @@
 import { convertAttributeToPropertyName, addProperty } from '../internal/decorators';
 import { generateAttributeMethods } from '../internal/attribute-methods-generator';
-import waitForDOMReady from './dom-ready';
+import { waitForDOMReady } from './dom-events';
 
 const CONTROLLER = Symbol('controller');
 

@@ -15,6 +15,7 @@ export { default as timeAgo } from './elements/time-ago';
 
 // Utilities
 export { default as defineCustomElement } from './util/define';
+export { waitForDOMReady, waitForLoad } from './util/dom-events';
 export { parse as parseEvent, getPath as getEventPath } from './util/events';
 export { parseHTML, renderNodes, cleanNodes } from './util/html';
 export { default as promisify } from './util/promise';

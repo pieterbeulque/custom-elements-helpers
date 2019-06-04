@@ -1,6 +1,6 @@
 import { parse as parseEvent, getPath } from '../util/events';
 import promisify from '../util/promise';
-import waitForDOMReady from '../util/dom-ready';
+import { waitForDOMReady } from '../util/dom-events';
 import elementIsInDOM from '../util/element-is-in-dom';
 
 const BASE_CONTROLLER_HANDLERS = Symbol('BASE_CONTROLLER_HANDLERS');
