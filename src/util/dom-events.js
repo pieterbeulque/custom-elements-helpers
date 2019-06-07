@@ -20,7 +20,7 @@ export function waitForDOMReady() {
 				}
 			};
 
-			window.addEventListener('readystatechange', handler, false);
+			document.addEventListener('readystatechange', handler, false);
 		}
 	});
 }
